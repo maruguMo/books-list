@@ -1,0 +1,17 @@
+<%- include("partials/header.ejs") %>
+    <main>
+        <div class="container flex-cont">
+            <h3>An error occured</h3>
+            <hr>
+
+            <%if(errorType=='500'){%>
+                <img class="error-img" src="/assets/error500.jpeg" alt="ERROR">
+                <p>Internal server error 500</p>
+            <%}else{%>
+                <img class="error-img" src="/assets/error-generic.png" alt="error">
+                <p><%=error%></p>
+            <%}%>
+            <p class="instruct">Please navigate to home by clicking on the home button</p>            
+        </div>
+    </main>
+<%- include("partials/footer.ejs") %>

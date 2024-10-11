@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+.ModalTitleBar{
+    position: sticky;
+    top: 0; /* Sticks the title bar to the top */
+    background-color: #0074d9;
+    color: white;
+    text-align: center;
+    font-size: large;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    z-index: 1101;
+}
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1100; /* Sit on top */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Black w/ opacity */
+  }
+  .mymodal-content {
+    background-color: white;
+    border: 1px solid #888;
+    width: 70%; /* Cover at least 60% of the width */
+    height: 100%; /* Cover at least 60% of the height */
+    max-width: 80%; /* Max width is 80% of viewport */
+    max-height: 95%; /* Max height is 95% of viewport */
+    overflow-y: auto; /* Enable scrolling within the modal */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: add some shadow for better visual */
+    border-radius: 10px; /* Optional: add border radius */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the modal */
+    opacity: 1;
+    font-family: 'Open Sans',Poppins, Roboto, sans-serif;
+    font-size:small;  
+  }
+  .close {
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+  }
+  .book-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* Adjust the number of columns as needed */
+    grid-gap: 20px;
+}
+
+.book-list li {
+    list-style: none;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+.book-list img {
+    width: 100%;
+    height: 200px; /* Adjust the height as needed */
+    object-fit: cover;
+}
+h1,h2,h3,h4,h5,h6{
+  font-family: Poppins, Roboto,'Open Sans','Segoe UI' ,sans-serif;
+}
+.higher{
+  z-index: 1101;
+}
+.book-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%; /* Ensure the card takes up full height */
+  border: 1px solid #ddd;
+  padding: 5px;
+}
+
+.book-dets {
+  flex-grow: 1; /* Ensure the details section grows to fill space */
+}
+
+.add-item {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  /* justify-content: flex-end;  */
+}
+
+.ctrls {
+  margin-top: 10px;
+}
+.flex-cont{
+  display: flex;
+  justify-content: center;  /* Centers horizontally */
+  align-items: center;      /* Centers vertically */
+  height: 100vh; 
+  flex-direction: column;
+}
+.instruct{
+  font-family: Poppins, Roboto,'Open Sans', sans-serif;
+}
+p{
+  margin: 0;
+  padding: 0;
+}
+.menu-bar{
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.error-img{
+  height: 50dvh;
+  width: auto;
+}
+.pict{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: auto;
+}
+.pict img{
+  height: 15dvh;
+  width: 15dvw;
+  
+}
+.ctrls-flex-c{
+  display: flex;
+  flex-direction: column;
+  justify-items:flex-end;
+}
+.full{
+  height: 100dvh;
+  width: 100dvw;
+}
+
+.defa-img{
+  color: white;
+  align-self: center;
+  background-image: url('/assets/icons/brand.jpeg');
+  background-position: center;
+  background-size: cover;
+  /* background-blend-mode: lighten; */
+  filter: grayscale(20%) contrast(70%);
+  background-blend-mode: darken;
+}
+
+/* some quill editor formatting and styles */
+.editor{
+  overflow-y: auto;
+  height: 47dvh;
+  box-sizing: border-box;
+  
+}
+.editor p{
+  margin-bottom: 0;
+}
+.ql-editor {
+  font-family: 'Poppins', 'Roboto',Verdana,'Open Sans', sans-serif; /* Set the default font family here */
+  font-size: 15px; /* Set the default font size here */
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Poppins"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Poppins"]::before {
+  content: 'Poppins';
+  font-family: 'Poppins', sans-serif;
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Roboto"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Roboto"]::before {
+  content: 'Roboto';
+  font-family:  'Roboto';
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Open Sans"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Open Sans"]::before {
+  content: 'Open Sans';
+  font-family: 'Open Sans';
+}
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Verdana"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Verdana"]::before {
+  content: 'Verdana';
+  font-family: 'Verdana';
+}
+.ql-editor em, .ql-editor i {
+  color: #000; /* Darker text color */
+}  
