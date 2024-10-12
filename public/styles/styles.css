@@ -135,7 +135,9 @@ p{
   height: 100dvh;
   width: 100dvw;
 }
-
+.dark{
+  background-color:rgb(236 237 243)
+}
 .defa-img{
   color: white;
   align-self: center;

@@ -112,7 +112,11 @@ async function fetchBookRemote(searchParams,searchTerm) {
   console.log(remURL);
   try{
     const res=await axios.get(remURL)
-    return res.data;
+    if (typeof res.data=='undefined'){
+      return [];
+    }else{
+      return res.data;
+    }  
   } catch (error) {
     if (error.response) {
       // Server responded with a status other than 2xx
@@ -142,16 +146,18 @@ async function addBook(title, author,isbn,notes,rating,coverUrl, lang, date_read
 }  
 
 // Function to update the book cover URL in the database
-async function updateBookCover(identifier, coverUrl, isISBN) {
+async function updateBookCover(identifier, coverUrl, avatar,isISBN) {
     let query;
     let values;
-  
+    values = [coverUrl, identifier, avatar];
     if (isISBN) {
-      query = `UPDATE booklist SET cover_url = $1 WHERE isbn13 = $2`;
-      values = [coverUrl, identifier];
+      query = `UPDATE booklist SET cover_url = $1, 
+      avatar = $3
+      WHERE isbn13 = $2`;
     } else {
-      query = `UPDATE booklist SET cover_url = $1 WHERE title = $2`;
-      values = [coverUrl, identifier];
+      query = `UPDATE booklist SET cover_url = $1,
+      avatar = $3 
+      WHERE title = $2`;
     }
   
     try {
@@ -220,7 +226,7 @@ app.get('/search',async(req,res)=>{
           }          
           localCoverPath = `${process.env.DEFAULT_TEMP}${coverFileName}.jpg`;
         }
-    
+ 
         return {
           author: doc.author_name ? doc.author_name.join(', ') : 'Unknown',
           author_key: doc.author_key ? doc.author_key.join(', ') : 'Unknown',
