@@ -50,7 +50,12 @@
   .book-list {
     display: grid;
     grid-template-columns: repeat(5, 1fr); /* Adjust the number of columns as needed */
-    grid-gap: 20px;
+    grid-gap: 10px;
+}
+.ctrls-container{
+  display: flex;
+  justify-content: space-evenly;
+  
 }
 
 .book-list li {
@@ -59,6 +64,11 @@
     padding: 10px;
 }
 
+.book-list>li p{
+  padding:0;
+  margin: 0;
+  font-size: small;
+}
 .book-list img {
     width: 100%;
     height: 200px; /* Adjust the height as needed */
@@ -91,7 +101,9 @@ h1,h2,h3,h4,h5,h6{
 }
 
 .ctrls {
-  margin-top: 10px;
+  margin-top: 5px;
+  flex-grow: 1; /* All items grow equally */
+  flex-basis: 0; /* Base size of 0 */
 }
 .flex-cont{
   display: flex;
@@ -122,7 +134,7 @@ p{
   width: auto;
 }
 .pict img{
-  height: 15dvh;
+  height: 25dvh;
   width: 15dvw;
   
 }
@@ -147,12 +159,19 @@ p{
   /* background-blend-mode: lighten; */
   filter: grayscale(20%) contrast(70%);
   background-blend-mode: darken;
+  image-rendering: optimizeQuality;
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+.hide{
+  visibility: hidden;
 }
 
 /* some quill editor formatting and styles */
 .editor{
   overflow-y: auto;
-  height: 47dvh;
+  height: 40dvh;
   box-sizing: border-box;
   
 }

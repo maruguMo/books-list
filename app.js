@@ -4,11 +4,13 @@ import pg from "pg";
 import axios from "axios";
 import 'dotenv/config';
 import fs from 'fs';
-import fetch from "node-fetch";
+import { promisify } from 'util';
 import path from "path";
 import { fileURLToPath } from "url";
 import { access } from 'fs/promises';
 import { constants } from 'fs';
+import multer from 'multer'
+
 
 const app = express();
 const PORT = process.env.APP_PORT;
@@ -25,18 +27,6 @@ const db = new pg.Client({
   password: process.env.PASS,
   port:process.env.DB_PORT,
 });
-// console.log(path.resolve('public','covers','temp','dummy.jpeg'));
-// console.log(path.join(__dirname,'public', 'covers', 'temp', 'dummy.jpeg'));
-
-
-// async function downloadCover(imageUrl, localFilename){
-//     const response=await fetch(imageUrl);
-//     const buffer = await response.arrayBuffer();
-//     const savePath = path.join(__dirname,'public', 'covers', 'temp', localFilename);
-
-//     fs.writeFile(savePath,buffer,()=>console.log(`image saved as ${localFilename} `));
-//     return savePath;
-// }
 
 // Function to check if a file exists
 async function fileExists(filePath) {
@@ -93,7 +83,7 @@ async function getList(){
 
 // Function to get book details by title or ISBN
 async function fetchBookRemote(searchParams,searchTerm) {
-  //  url = "https://openlibrary.org/search.json?q=the+sun+also+rises"
+
   let remURL=process.env.BASE_URL;
   switch(searchTerm){
     case  'ISBN':
@@ -112,8 +102,8 @@ async function fetchBookRemote(searchParams,searchTerm) {
   console.log(remURL);
   try{
     const res=await axios.get(remURL)
-    if (typeof res.data=='undefined'){
-      return [];
+    if (typeof res.data.docs=='undefined'){
+      return res.data.docs=[];
     }else{
       return res.data;
     }  
@@ -136,12 +126,14 @@ async function fetchBookRemote(searchParams,searchTerm) {
  
 
 //add a new book to the database
-async function addBook(title, author,isbn,notes,rating,coverUrl, lang, date_read){
-    const res = await db.query(
-      `   INSERT INTO booklist (title, author, isbn13,notes,rating, cover_url, lang, date_read)
-          VALUES ($1,$2,$3,$4,$5,$6, $7)`,
-            [title, author, isbn, notes, rating,coverUrl, lang, date_read]
+async function addBook(title, author,isbn,notes,rating,coverUrl, lang, date_read, avatar){
+  console.log(title, author,isbn,notes,rating,coverUrl, lang, date_read, avatar);  
+  const res = await db.query(
+      `   INSERT INTO booklist (title, author, isbn13, notes,rating, cover_url, lang, date_read, avatar)
+          VALUES ($1,$2,$3,$4,$5,$6, $7, $8,$9)`,
+            [title, author, isbn, notes, rating, coverUrl, lang, date_read,avatar]
     );
+    
     console.log(res);
 }  
 
@@ -182,7 +174,7 @@ async function fetchBookLocal(searchParams, isISBN=false) {
   const res= await db.query(query, values);
   return res.rows;
 }
-//get '/' route
+// the get '/' route
 app.get("/", async(req, res)=>{
     const books = await getList();
     // console.log(books)
@@ -190,6 +182,7 @@ app.get("/", async(req, res)=>{
     const remRes=null;
     res.render("index.ejs", {books, locRes, remRes});
 });
+//#region search for book both online and local
 app.get('/search',async(req,res)=>{
   // search locally i.e. search for title/author/ISBN
   // then search on open library.....
@@ -245,23 +238,82 @@ app.get('/search',async(req,res)=>{
   }
 
 });
-app.post("/add", async(req,res)=>{
+//#region 
+
+//#region  multer middleware region for image uploading
+  const rename = promisify(fs.rename);
+  const copyFile = promisify(fs.copyFile);
+  const unlink = promisify(fs.unlink);
+// Helper function to generate a random 6-digit filename
+  function generateRandomFileName() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+  // Set up multer for file uploads
+  const storage = multer.diskStorage({
+    destination: function (req, file, cb) 
+    {
+        cb(null, path.join('public', 'covers', 'temp')); // Temp folder for caching
+    },
+    filename: function (req, file, cb) 
+    {
+        const randomFileName = `${generateRandomFileName()}.jpg`; 
+        cb(null, randomFileName); // Save as ISBN.jpg
+    }
+  });
+  // File validation (only images allowed)
+  const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images are allowed'), false);
+    }
+  };
+  const upload = multer({ 
+    storage: storage, 
+    fileFilter: fileFilter
+  });
+//#endregion
+app.post("/add",upload.single('coverImage'), async(req,res)=>{
     const title=req.body.title;
     const author=req.body.author;
-    const isbn=req.body.isbn;
+    const isbn=req.body.isbn.trim();
     const notes=req.body.notes
-    const rating=parseFloat(req.body.rating);
-    const coverUrl=req.body.imgUrl;
-    const lang=req.body.language;
+    const rating = parseFloat(req.body.rating);
+ 
+    const lang=req.body.lang;
     const date_read=req.body.date_read
+    const avatar = req.file ? `${process.env.DEFAULT_TEMP}${isbn}.jpg` : process.env.DEFAULT_COVER;
+
+    const coverUrl=req.body.imgUrl?req.body.imgUrl:avatar;
+    
+    console.log(rating);
+        
+    // Move the file from /temp to /covers after successful upload
+    if (req.file) {
+        const tempPath = path.resolve('public','covers','temp', req.file.filename);
+        const finalPath = path.resolve('public','covers', `${isbn}.jpg`);
+
+        await rename(tempPath, finalPath); // Move the file
+
+        // Optionally copy the renamed file back to temp folder for caching
+        const cachedFilePath = path.join('public', 'covers', 'temp', `${isbn}.jpg`);
+        await copyFile(finalPath, cachedFilePath);
+    }
+
+
     try{
-        await addBook(title, author,isbn, notes, rating,coverUrl, lang, date_read);
-        res.redirect("/");
+      
+        await addBook(title, author,isbn, notes, rating,coverUrl, lang, date_read,avatar);
+
+        res.status(200).redirect("/");
     }catch(error){
         console.log(error.stack);
-        res.render('error.ejs', {error});
+        res.render('errorPage.ejs', {error, errorType:300});
     }
-})
+});
+
+
+//#region Handle shutdown gracefully
 // Handle shutdown
 async function shutdown() {
     console.log('Shutting down gracefully...');
@@ -271,7 +323,10 @@ async function shutdown() {
   
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
+//#endregion
 
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  //#region  Start the Server
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  //#endregion

@@ -50,6 +50,9 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
+# images folder
+public/covers/
+
 # Optional npm cache directory
 .npm
 

@@ -2,6 +2,31 @@
     <div class="menu-bar">
         <button class="btn btn-outline-primary" id="add-book">Add a book!</button>
     </div>
+    <!-- books read list -->
+    <div>
+    <%if(books && books.length >0) {%>
+    <ul class="book-list px-0 py-0">
+        <% books.forEach(book=>{ %>
+            <li>
+                <img class="mb-1 rounded" src="<%=book.avatar %>" alt="<%= book.title%>">
+                <p><strong>Title: <%= book.title%></strong></p>
+                <p><strong>Author:</strong> <%=book.author%></p>
+                <p><strong>Language: </strong><%=book.lang%></p>
+                <p><strong>Date Read:</strong> <%=book.date_read%></p>
+                <p class="rating" data-rating="<%=book.rating%>"><strong>My Rating:</strong> <%=book.rating%>/5</p>
+                <div class="ctrls-container">
+                    <button class="ctrls btn btn-dark" id="edit-button" data-id="<%=book.id%>">Edit</button>
+                    <button class="ctrls btn btn-dark" id="view-button" data-id="<%=book.id%>">View</button>
+                    <button class="ctrls  btn btn-dark" id="del-button" data-id="<%=book.id%>">Delete</button>
+                </div>
+            </li>    
+        <% });%>
+    </ul>
+    <%}else{%>
+        <h5 class="flex-cont">You havent added any books to your list yet</h5>    
+    <%}%>
+    </div>
+
     <div class="modal higher" id="spinner-modal">
         <div class="d-flex justify-content-center mymodal-content">
             <div class="spinner-border text-primary" role="status">
@@ -71,15 +96,14 @@
     <div class="modal" id="add-newBk">
         <div class="mymodal-content container dark">
             <div class="ModalTitleBar">Add a new book <span class="close" id="closeAddModal">&times;</span></div>
-            <form action="/add"  id="add-new" method="POST">
+            <form action="/add"  id="add-new" method="POST" enctype="multipart/form-data">
                 <div class="row">
                     <div class="col-3 mt-2">
                         <div class="pict">
-                            <img src="" alt="Add a book image" class="rounded border defa-img">
+                            <img  alt="Add a book image" class="rounded border defa-img" id="book-cover-preview">
                             <hr>
                             <div class="ctrls-flex-c btn-group mb-1 p-1">
-                                <button class="btn btn-primary rounded mb-2">Upload cover</button>
-                                <button class="btn btn-primary rounded mb-2">Search Online</button>
+                                <input type="file" name="coverImage" id="coverImage" class="form-control mb-2 btn btn-outline-secondary" accept="image/*">
                             </div>
                         </div>
                     </div>
@@ -97,14 +121,15 @@
                         <div class="row mt-5">
                             <div class="col-6 mb-2">
                                 <!-- <label for="title" class="form-label">ISBN</label> -->
-                                <input type="text" name="isbn13" id="isbn" class="form-control" required placeholder="ISBN">
+                                <input type="text" name="isbn" id="isbn" class="form-control mb-1" required maxlength="15" placeholder="ISBN">
+                                <button class="btn btn-primary rounded hide" id="search-online">Search for Cover Online</button>
                             </div>
                             <div class="col-6 mb-2">
                                 <!-- <label for="lang" class="form-label">Language </label> -->
                                 <input type="text" name="lang" id="lang" class="form-control" required placeholder="Language">
                             </div>
                         </div>
-                        <div class="row mt-5">
+                        <div class="row mt-4">
                             <div class="col-6 mb-2">
                                 <!-- <label for="date_read" class="form-label">Date read</label> -->
                                 <input type="text" name="date_read" id="date_read" class="form-control" required placeholder="Date read">
@@ -118,132 +143,175 @@
                 </div>
                 <div class="row p-0">
                     <div class="col-12 mx-auto p-2">
-                        <p class="form-label ModalTitleBar" >Notes</p>
+                        <p class="form-label ModalTitleBar" >Notes about the book</p>
                         <div  id="editor" class="editor"> </div>
                         <input type ="hidden" name="notes" id="add-notes" />
                 </div>
                 <div class="row p-0">
                     <div class="col-12 d-flex justify-content-end p-0">
+                        <input type="hidden" name="notes" id="add-notes">
+                        <input type="hidden" name="imgUrl" id="img-Url">
                         <button class="btn btn-secondary" id="reset-add" type="reset">Reset</button>
-                        <button class="btn btn-primary ms-2" id="submitAdd" type="submit">Submit</button>
+                        <button class="btn btn-primary ms-2" id="submit-Add" type="submit">Submit</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
-    <!-- books read list -->
-     <div>
-        <%if(books && books.length >0) {%>
-        <ul class="book-list">
-            <% books.forEach(book=>{ %>
-                <li>
-                    <img class="mb-3" src="<%=book.avatar %>" alt="<%= book.title%>">
-                    <p><strong>Title: <%= book.title%></strong></p>
-                    <p>Author: <%=book.author%></p>
-                    <p>ISBN: <%=book.isbn13%></p>
-                    <p><strong>Language: </strong><%=book.lang%></p>
-                    <p>Date Read: <%=book.date_read%></p>
-                    <p>My Rating: <%=book.rating%>/5</p>
-                    <div class="ctrls-container">
-                        <button class="ctrls btn btn-dark" id="edit-button" data-id="<%=book.id%>">Edit</button>
-                        <button class="ctrls  btn btn-dark" id="del-button" data-id="<%=book.id%>">Delete</button>
-                    </div>
-                </li>    
-            <% });%>
-        </ul>
-        <%}else{%>
-            <h5 class="flex-cont">You havent added any books to your list yet</h5>    
-        <%}%>
-     </div>
 <%- include("partials/footer.ejs") %>
 <script type="module">
 
     import { createQuillEditor } from  '/js/quillSetUp.js';
     import {showDynamicAlert} from '/js/Util.js';
-
+    
     document.addEventListener('DOMContentLoaded', ()=> {
-        const searchLbl="Search the open-library By"
-        const searchModal=document.getElementById('search-modal');
-        const loadingWait =document.getElementById('spinner-modal');
-        const searchInput=document.getElementById('searchInput');
-        const closeSearchBtn=document.getElementById('closeSearchModal');
-        const modalContent=document.getElementById('mymodal-content');
-        const searchForm= document.getElementById('searchForm');
-        
-        //#Region Add new book functionality
-        const addBtn=document.getElementById('add-book');
-        const addModal=document.getElementById('add-newBk');
-        const closeAddBtn=document.getElementById('closeAddModal');
-        const qlContainer=document.getElementById('editor')
+    //#region avatar upload declarations
+                const imgFileInput=document.getElementById('coverImage');
+                const coverImgPreview=document.getElementById('book-cover-preview');
+    //#endregion
+    //#region  search declarations
+            const searchLbl="Search the open-library By"
+            const searchModal=document.getElementById('search-modal');
+            const loadingWait =document.getElementById('spinner-modal');
+            const searchInput=document.getElementById('searchInput');
+            const closeSearchBtn=document.getElementById('closeSearchModal');
+            const modalContent=document.getElementById('mymodal-content');
+            const searchForm= document.getElementById('searchForm');
+    //#endregion
+    //#region :Add new book declarations
+            const addBtn=document.getElementById('add-book');
+            const addModal=document.getElementById('add-newBk');
+            const closeAddBtn=document.getElementById('closeAddModal');
+            const qlContainer=document.getElementById('editor');
+            const addNewForm=document.getElementById('add-new');
+            const submitBtn=document.getElementById('submit-Add');
+            const noteText=document.getElementById('add-notes');
+            const imgUrl=document.getElementById('img-Url');
 
+            const addQuill=createQuillEditor(qlContainer)
+    //#endregion
 
-        const quill=createQuillEditor(qlContainer)
-
-        addBtn.addEventListener('click', ()=>{
-            showModal(addModal);
-        });
-        closeAddBtn.onclick=()=>{
-            closeModal(addModal);
-        }
-
-        document.querySelectorAll('.dropdown-item').forEach(item =>{
-            item.addEventListener('click', (event)=>{
-                event.preventDefault();
-                // console.log('click event fired');
-                const selectedText=item.textContent
-                const searchBy=item.getAttribute('data-searchby');
-
-                document.getElementById('searchByLabel').textContent=`${searchLbl}: ${selectedText}`;
-
-                document.getElementById('searchByHidden').value=searchBy;
-
-                document.getElementById('searchInput').ariaPlaceholder=`Search By: ${selectedText}`;
-                document.getElementById('searchInput').placeholder=`Search By: ${selectedText}`;
+    //#region Hide or show search button when ISBN is keyed in
+            const isbnIput=document.getElementById('isbn');
+            const searchBtn=document.getElementById('search-online');
+            isbnIput.addEventListener('input',()=>{
+                if(isbnIput.value.trim()!==""){
+                    searchBtn.style.visibility='visible';
+                }else{
+                    searchBtn.style.visibility='hidden';
+                }
             });
-        });
+    //#endregion
 
-        // validate search input and display the modal that is going to show the books
-        searchForm.addEventListener('submit',(event)=>{
-            const searchValue=searchInput.value.trim();
-            if(searchValue===''){
-                event.preventDefault();
-                // show dynamic message instead of the usual alert
-                showDynamicAlert('Please input a search value',searchForm);
-                return;
-            }else{
-                //the event will submit automatically to route?
-                showModal(searchModal);
-                showModal(loadingWait)
-                // searchModal.style.display='block';
+    //#region Add book functionality
+            submitBtn.addEventListener('click',(e)=>{
+                if(addQuill.root.innerHTML===''){
+                    e.preventDefault();
+                }else{
+                    getQlContent(noteText, addQuill);
+                }
+            });
+
+            addBtn.addEventListener('click', ()=>{
+                showModal(addModal);
+            });
+
+            closeAddBtn.onclick=()=>{
+                closeModal(addModal);
             }
-            
-        });
+            addNewForm.onsubmit=(e)=>{
+                if(quill.root.innerHTML===''){
+                    e.preventDefault();
+                }else{
+                    getQlContent(noteText, quill);
+                }
+            }
+    //#endregion
 
-        //on the search modal purge the search results when its closed
-        //and navigate to the home page
-        closeSearchBtn.onclick=()=>{
-            closeModal(searchModal);
-            window.location.replace("/");
-            //reset the search results
+    //#region Search functionality
+            document.querySelectorAll('.dropdown-item').forEach(item =>{
+                item.addEventListener('click', (event)=>{
+                    event.preventDefault();
+                    // console.log('click event fired');
+                    const selectedText=item.textContent
+                    const searchBy=item.getAttribute('data-searchby');
+
+                    document.getElementById('searchByLabel').textContent=`${searchLbl}: ${selectedText}`;
+
+                    document.getElementById('searchByHidden').value=searchBy;
+
+                    document.getElementById('searchInput').ariaPlaceholder=`Search By: ${selectedText}`;
+                    document.getElementById('searchInput').placeholder=`Search By: ${selectedText}`;
+                });
+            });
+
+            // validate search input and display the modal that is going to show the books
+            searchForm.addEventListener('submit',(event)=>{
+                const searchValue=searchInput.value.trim();
+                if(searchValue===''){
+                    event.preventDefault();
+                    // show dynamic message instead of the usual alert
+                    showDynamicAlert('Please input a search value',searchForm);
+                    return;
+                }else{
+                    //the event will submit automatically to route?
+                    showModal(searchModal);
+                    showModal(loadingWait)
+                    // searchModal.style.display='block';
+                }
+                
+            });
+
+            //on the search modal purge the search results when its closed
+            //and navigate to the home page
+            closeSearchBtn.onclick=()=>{
+                closeModal(searchModal);
+                window.location.replace("/");
+                //reset the search results
+                <%if(locRes || remRes) {%>
+                    <%locRes = null;%>
+                    <%remRes = null;%>
+                <%}%>
+            }
+
+            //check if search data is available and show search modal
+            // Automatically open the modal if there are search results
             <%if(locRes || remRes) {%>
-                <%locRes = null;%>
-                <%remRes = null;%>
+                showModal(searchModal);
+                closeModal(loadingWait);
             <%}%>
-        }
+    //#endregion
+        
+    //#region avatar/file upload functionality
+            imgFileInput.addEventListener('input',()=>{
+                if(imgFileInput.files && imgFileInput.files.length > 0){
+                    coverImgPreview.style.backgroundImage = 'none';
+                }else{
+                    coverImgPreview.style.backgroundImage=`url('/assets/icons/brand.jpeg')`;
+                    coverImgPreview.src="";
+                }
+                previewImage();
+            });    
+            function previewImage() {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    coverImgPreview.src = reader.result;
+                };
+                reader.readAsDataURL(event.target.files[0]);
+            }        
+    //#endregion
 
-        //check if search data is available and show search modal
-        // Automatically open the modal if there are search results
-        <%if(locRes || remRes) {%>
-            showModal(searchModal);
-            closeModal(loadingWait);
-        <%}%>
-
+    //#region generic functions to show/hide modal and get quill editor content
         function showModal(target){
             target.style.display='block';
         }
         function closeModal(target){
             target.style.display='none';
         }
-
+        function getQlContent(target, qlEditor){
+            target.value=qlEditor.root.innerHTML;
+        }
+//#endregion
+    
     });
 </script>
