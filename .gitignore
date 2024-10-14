@@ -57,7 +57,7 @@ web_modules/
 !/public/covers/
 
 # Allow tracking of a specific file (if you have a default cover or a README)
-!/public/covers/defaultCover.png
+!/public/covers/DefaultCover.png
 
 # Optional npm cache directory
 .npm
