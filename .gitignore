@@ -50,8 +50,14 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
-# images folder
-public/covers/
+# Ignore everything in the covers directory
+/public/covers/*
+
+# Except the covers directory itself
+!/public/covers/
+
+# Allow tracking of a specific file (if you have a default cover or a README)
+!/public/covers/defaultCover.png
 
 # Optional npm cache directory
 .npm
