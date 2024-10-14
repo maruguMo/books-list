@@ -63,3 +63,21 @@ export function showDynamicAlert(message, targetElement) {
         alertDiv.remove();
     });
   }
+  export function showModal(target){
+      target.style.display='block';
+  }
+  export function closeModal(target){
+      target.style.display='none';
+  }
+  // Function to fill stars based on the rating
+  export function fillStars(rating, target, valueElement=null) {
+      const starPercentage = (rating / 5) * 100;
+      target.style.width = `${starPercentage}%`;
+      if (valueElement){
+          valueElement.value=rating.toFixed(1);
+          valueElement.dispatchEvent(new Event('change'));
+      }
+  }
+  export function getQlContent(target, qlEditor){
+    target.value=qlEditor.root.innerHTML;
+  }

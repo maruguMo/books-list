@@ -101,25 +101,26 @@ async function fetchBookRemote(searchParams,searchTerm) {
   }
   console.log(remURL);
   try{
-    const res=await axios.get(remURL)
-    if (typeof res.data.docs=='undefined'){
-      return res.data.docs=[];
-    }else{
-      return res.data;
-    }  
+    const res=await axios.get(remURL);
+    // console.log('data:', res.data);
+    return res.data;
   } catch (error) {
     if (error.response) {
       // Server responded with a status other than 2xx
-      console.log('Error Status:', error.response.status);
-      console.log('Error Data:', error.response.data);
+      // console.log('Error Status:', error.response.status);
+      // console.log('Error Data:', error.response.data);
+      // return error.response.status;
+      console.log('Server responded with a status other than 2xx');
     } else if (error.request) {
       // Request was made, but no response was received
-      console.log('No response received:', error.request);
+      // console.log('No response received:', error.request);
+      console.log('No response received. Request might be bad');
     } else {
       // Something else happened while setting up the request
-      console.log('Error Message:', error.message);
+      // console.log('Error Message:', error.message);
+      console.log('something else happened');
     }
-    return error.response.data;
+    return null;
   }
 }
 // Function to download and save the image
@@ -184,56 +185,58 @@ app.get("/", async(req, res)=>{
 });
 //#region search for book both online and local
 app.get('/search',async(req,res)=>{
+  
   // search locally i.e. search for title/author/ISBN
   // then search on open library.....
-  //merge the result in data structure [] indicating local or  open library
+
   const searchParams=req.query.search;
   const searchBy=req.query.searchBy;
+
   const isISBN=searchBy==='ISBN';
-  let dbSearchParams
-  if(isISBN){
-    dbSearchParams=req.body.search;
-  }else{
-    dbSearchParams=`%${req.body.search}%`;
-  }
+  const dbSearchParams=isISBN?req.query.search:`%${req.query.search}%`;
+
   try{
     const books = await getList();
     const locRes= await fetchBookLocal(dbSearchParams, isISBN);
-    const remBooks= await fetchBookRemote(searchParams,searchBy);
+    const remBooks= await fetchBookRemote(searchParams,searchBy); //initial object to contain results from the API call
+    console.log(remBooks);
+    let remRes=null; //object to hold mapped results -(via the mpa function) - that will contain application specific field names
     // console.log(localBooks);
-    const remRes = await Promise.all(
-        remBooks.docs.map(async doc => {
-        const coverId = doc.cover_i ? doc.cover_i : null;
-        let localCoverPath = process.env.DEFAULT_COVER; // Default cover if none
-        // Only download the cover if cover_id exists
-        if (coverId) {
-          const coverFileName = `${coverId}`; // Use cover_id as the filename
-          const imageUrl = `${process.env.COVERS_BASE}${coverId}-M.jpg`;
-          const tempCoverPath = path.resolve(process.env.DEFAULT_TEMP, `${coverFileName}.jpg`);
+    if (remBooks && remBooks.docs){
+            remRes = await Promise.all(
+            remBooks.docs.map(async doc => {
+            const coverId = doc.cover_i ? doc.cover_i : null;
+            let localCoverPath = process.env.DEFAULT_COVER; // Default cover if none
+            // Only download the cover if cover_id exists
+            if (coverId) {
+              const coverFileName = `${coverId}`; // Use cover_id as the filename
+              const imageUrl = `${process.env.COVERS_BASE}${coverId}-M.jpg`;
+              const tempCoverPath = path.resolve(process.env.DEFAULT_TEMP, `${coverFileName}.jpg`);
 
-          // Check if the file already exists
-          const exists = await fileExists(tempCoverPath); 
+              // Check if the file already exists
+              const exists = await fileExists(tempCoverPath); 
 
-          if (!exists){
-            await downloadImage(imageUrl, coverFileName);
-          }          
-          localCoverPath = `${process.env.DEFAULT_TEMP}${coverFileName}.jpg`;
-        }
- 
-        return {
-          author: doc.author_name ? doc.author_name.join(', ') : 'Unknown',
-          author_key: doc.author_key ? doc.author_key.join(', ') : 'Unknown',
-          avatar: localCoverPath, // Set to the local file path
-          title: doc.title || 'untitled',
-          lang: doc.language ? doc.language[0] : 'Unknown',
-          isbn13: doc.isbn && doc.isbn.length > 0 ? doc.isbn[0] : 'No ISBN',
-          publish:doc.publish_date ? doc.publish_date[0] : "Unknown"
-        };
-      })
-    );
-  res.render('index.ejs',{books, locRes, remRes});
+              if (!exists){
+                await downloadImage(imageUrl, coverFileName);
+              }          
+              localCoverPath = `${process.env.DEFAULT_TEMP}${coverFileName}.jpg`;
+            }
+    
+            return {
+              author: doc.author_name ? doc.author_name.join(', ') : 'Unknown',
+              author_key: doc.author_key ? doc.author_key.join(', ') : 'Unknown',
+              avatar: localCoverPath, // Set to the local file path
+              title: doc.title || 'untitled',
+              lang: doc.language ? doc.language[0] : 'Unknown',
+              isbn13: doc.isbn && doc.isbn.length > 0 ? doc.isbn[0] : 'No ISBN',
+              publish:doc.publish_date ? doc.publish_date[0] : "Unknown"
+            };
+          })
+        );
+    }
+    res.render('search.ejs',{locRes, remRes});
   }catch(error){
-    console.log(error.stack);
+    // console.log(error.stack);
     res.status(500).render('errorPage.ejs', {error, errorType:500});
   }
 

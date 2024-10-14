@@ -69,11 +69,13 @@
   margin: 0;
   font-size: small;
 }
-.book-list img {
+
+/* .book-list img {
     width: 100%;
-    height: 200px; /* Adjust the height as needed */
+    height: 200px; 
     object-fit: cover;
-}
+} */
+
 h1,h2,h3,h4,h5,h6{
   font-family: Poppins, Roboto,'Open Sans','Segoe UI' ,sans-serif;
 }
@@ -88,7 +90,11 @@ h1,h2,h3,h4,h5,h6{
   border: 1px solid #ddd;
   padding: 5px;
 }
-
+.book-img{
+  width: 100%;
+  height: 25dvh;
+  object-fit: contain;
+}
 .book-dets {
   flex-grow: 1; /* Ensure the details section grows to fill space */
 }
@@ -104,6 +110,8 @@ h1,h2,h3,h4,h5,h6{
   margin-top: 5px;
   flex-grow: 1; /* All items grow equally */
   flex-basis: 0; /* Base size of 0 */
+  border: none;
+  cursor: pointer;
 }
 .flex-cont{
   display: flex;
@@ -205,3 +213,54 @@ p{
 .ql-editor em, .ql-editor i {
   color: #000; /* Darker text color */
 }  
+
+
+/* ratings styling section */
+.rating {
+  display: inline-block;
+  font-size: 0; /* Hides text nodes in some browsers */
+  position: relative;
+  cursor: pointer;
+}
+
+.rating-show{
+  font-family: 'Open Sans', sans-serif;
+  margin: 15px;
+  font-size: 12px;
+  /* font-style: italic; */
+}
+.stars-outer {
+  display: inline-block;
+  position: relative;
+  font-size: 20px; /* Adjust the size of stars */
+  color: lightgray; /* Empty star color */
+}
+
+.stars-outer::before {
+  content: '★★★★★'; /* 5 stars */
+  font-family: Arial, sans-serif; /* You can use icons here as well */
+}
+
+.stars-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  color: gold; /* Filled star color */
+  width: 0; /* This will be dynamically changed */
+}
+
+.stars-inner::before {
+  content: '★★★★★'; /* 5 stars */
+  font-family: Arial, sans-serif;
+}
+/* .star-rating{
+  margin-bottom: 1px;
+} */
+.arial-ital{
+    font-family: 'Open Sans', arial, sans-serif;
+    font-size:small;
+    margin:0;
+    padding: 0;
+}
