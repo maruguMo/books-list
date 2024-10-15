@@ -70,10 +70,11 @@
         import { createQuillEditor } from  '/js/quillSetUp.js';
         import { showDynamicAlert, showModal, closeModal, 
                 getQlContent} from '/js/Util.js';
-        import { initializeRatingSystem } from '/js/DOM.js';
+        import {initializeRatingSystem, initializeCommonDOM } from '/js/DOM.js';
 
         document.addEventListener('DOMContentLoaded', ()=>{
             initializeRatingSystem();
+            initializeCommonDOM();
         });
     </script>
 <%- include("partials/footer.ejs") %>

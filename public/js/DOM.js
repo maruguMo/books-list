@@ -40,14 +40,22 @@ export function initializeRatingSystem() {
             fillStars(currentRating, starsInner, valueElement); 
         });
     }
+
 }
-
-// Helper function to fill the stars
-// function fillStars(rating, target, valueElement = null) {
-//     const percentage = (rating / 5) * 100;
-//     target.style.width = `${percentage}%`;
-
-//     if (valueElement) {
-//         valueElement.value = rating.toFixed(1); // Update the rating value
-//     }
-// }
+export function initializeCommonDOM(){
+    document .querySelectorAll("#view-button").forEach(btn =>{
+        btn.addEventListener('click', async ()=>{
+            const id = btn.getAttribute('data-id');
+            if (id){
+               const resp = await fetch(`/view-notes/${id}`);
+               console.log(resp);
+               if(resp.ok){
+                    window.location.href = `/view-notes/${id}`;
+                    // window.location.reload();
+               }else{
+                console.error("Error fetching notes:", resp.status);
+               }
+            }
+        });    
+    });
+}

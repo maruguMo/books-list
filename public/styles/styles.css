@@ -265,3 +265,13 @@ p{
     margin:0;
     padding: 0;
 }
+
+/* view notes section: formatting */
+.notes-section{
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow-y: auto;
+  border-radius: 5px;
+  height: 65dvh;  
+  border: none!important;
+}

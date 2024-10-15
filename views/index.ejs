@@ -46,38 +46,38 @@
                             <img  alt="Add a book image" class="rounded border defa-img" id="book-cover-preview">
                             <hr>
                             <div class="ctrls-flex-c btn-group mb-1 p-1">
-                                <input type="file" name="coverImage" id="coverImage" class="form-control mb-2 btn btn-outline-secondary" accept="image/*">
+                                <input type="file" name="coverImage" id="coverImage" class="form-control mb-2 btn btn-primary" accept="image/*">
                             </div>
                         </div>
                     </div>
                     <div class="col-9 mt-2">
-                        <div class="row mt-4">
-                            <div class="col-6 mb-2">
+                        <div class="row mt-2">
+                            <div class="col-6 mb-1">
                                 <!-- <label for="title" class="form-label">Title</label> -->
                                 <input type="text" name="title" id="title" class="form-control" required placeholder="Title">
                             </div>
-                            <div class="col-6 mb-2">
+                            <div class="col-6 mb-1">
                                 <!-- <label for="author" class="form-label">Author </label> -->
                                 <input type="text" name="author" id="author" class="form-control" required placeholder="Author">
                             </div>
                         </div>
                         <div class="row mt-5">
-                            <div class="col-6 mb-2">
+                            <div class="col-6 mb-1">
                                 <!-- <label for="title" class="form-label">ISBN</label> -->
                                 <input type="text" name="isbn" id="isbn" class="form-control mb-1" required maxlength="15" placeholder="ISBN">
                                 <button class="btn btn-primary rounded hide" id="search-online">Search for Cover Online</button>
                             </div>
-                            <div class="col-6 mb-2">
+                            <div class="col-6 mb-1">
                                 <!-- <label for="lang" class="form-label">Language </label> -->
                                 <input type="text" name="lang" id="lang" class="form-control" required placeholder="Language">
                             </div>
                         </div>
                         <div class="row mt-4">
-                            <div class="col-6 mb-2">
+                            <div class="col-6 mb-1">
                                 <!-- <label for="date_read" class="form-label">Date read</label> -->
                                 <input type="date" name="date_read" id="date_read" class="form-control" required placeholder="Date read">
                             </div>
-                            <div class="col-6 mb-2">
+                            <div class="col-6 mb-1">
                                 <!-- <label class="form-label">Rating</label> -->
                                 
                                 <input type="hidden" name="rating" id="rating" class="form-control" required placeholder="Rating">
@@ -101,7 +101,7 @@
                     <div class="col-12 d-flex justify-content-end p-0">
                         <input type="hidden" name="notes" id="add-notes">
                         <input type="hidden" name="imgUrl" id="img-Url">
-                        <button class="btn btn-secondary" id="reset-add" type="reset">Reset</button>
+                        <button class="btn btn-secondary mx-3" id="reset-add" type="reset">Reset</button>
                         <button class="btn btn-primary ms-2" id="submit-Add" type="submit">Submit</button>
                     </div>
                 </div>
@@ -113,7 +113,7 @@
     import { createQuillEditor } from  '/js/quillSetUp.js';
     import {showDynamicAlert, showModal, closeModal, 
             fillStars, getQlContent} from '/js/Util.js';
-    import { initializeRatingSystem } from '/js/DOM.js';
+    import { initializeCommonDOM, initializeRatingSystem } from '/js/DOM.js';
 
     document.addEventListener('DOMContentLoaded', ()=> {
 
@@ -176,6 +176,7 @@
                 if(quill.root.innerHTML===''){
                     e.preventDefault();
                 }else{
+                    console.log(quill.root.innerHTML);
                     getQlContent(noteText, quill);
                 }
             }
@@ -230,8 +231,9 @@
             }        
     //#endregion
 
-    //#region set ratings stars region
+    //#region set ratings stars region and other common DOM processing
             initializeRatingSystem();
+            initializeCommonDOM();
     //#endregion
     });
 </script>

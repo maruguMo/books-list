@@ -1,0 +1,33 @@
+<%- include("partials/header.ejs") %>
+    <%if(book){%>
+    <div class="book-dets p-2" id="book-details">
+        <div class="book-header">
+            <dl class="book-info">
+                <dt>Title:</dt> <dd><%= book[0].title %></dd>
+                <dt>Author:</dt><dd><%= book[0].author %></dd>
+                <dt>ISBN:</dt><dd><%= book[0].isbn13%></dd>
+                <dt>Language:</dt><dd><%= book[0].lang %></dd>
+            </dl>
+        </div>
+        <hr>
+        <div class="notes-section ql-container ql-editor ql-snow" id="editor">
+            <%- bookNotes %>
+        </div>
+    </div>
+    <%}else{%>
+        <p class="instruct"> Oof! That didn't quite work. Please navigate to home and try again</p>
+    <%}%>
+
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', ()=>{
+        // //this will be used exclusively by view notes ejs
+        //     const notesViewer=document.getElementById("editor");
+        //     const rawNotes = "<%= bookNotes%>";
+
+        //     const cleanedNotes = rawNotes.replace(/^"\{/, '{').replace(/\}"$/, '}').replace(/\\\\"/g, ''); // Clean the string    
+        //     notesViewer.innerHTML = cleanedNotes;
+
+        //     //<%- bookNotes %>
+        });
+    </script>
+<%- include("partials/footer.ejs") %>

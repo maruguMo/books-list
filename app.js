@@ -10,7 +10,7 @@ import { fileURLToPath } from "url";
 import { access } from 'fs/promises';
 import { constants } from 'fs';
 import multer from 'multer'
-
+import { body, validationResult } from 'express-validator';
 
 const app = express();
 const PORT = process.env.APP_PORT;
@@ -77,7 +77,7 @@ app.set('views', './views');
 //get all books
 async function getList(){
     const res= await db.query(
-        `SELECT * FROM booklist`
+        `SELECT * FROM booklist ORDER BY id ASC`
     );
     // console.log(res.rows);
     return res.rows;
@@ -130,15 +130,15 @@ async function fetchBookRemote(searchParams,searchTerm) {
  
 
 //add a new book to the database
-async function addBook(title, author,isbn,notes,rating,coverUrl, lang, date_read, avatar){
-  console.log(title, author,isbn,notes,rating,coverUrl, lang, date_read, avatar);  
+async function addBook(title, author, isbn, notes, rating, coverUrl, lang, date_read, avatar){
+  console.log(notes);  
   const res = await db.query(
       `   INSERT INTO booklist (title, author, isbn13, notes,rating, cover_url, lang, date_read, avatar)
           VALUES ($1,$2,$3,$4,$5,$6, $7, $8,$9)`,
-            [title, author, isbn, notes, rating, coverUrl, lang, date_read,avatar]
+            [title, author, isbn, JSON.stringify(notes), rating, coverUrl, lang, date_read,avatar]
     );
     
-    console.log(res);
+    // console.log(res);
 }  
 
 // Function to update the book cover URL in the database
@@ -163,6 +163,7 @@ async function updateBookCover(identifier, coverUrl, avatar,isISBN) {
       console.error('Error updating the database:', error.message);
     }
   }
+
 async function fetchBookLocal(searchParams, isISBN=false) {
   //check author or title or ISBN
   let query;
@@ -185,6 +186,45 @@ app.get("/", async(req, res)=>{
     const locRes=null;
     const remRes=null;
     res.render("index.ejs", {books, locRes, remRes});
+});
+async function fetchBookById(id){
+  if(id){
+    const res= await db.query(` SELECT * FROM booklist WHERE id = $1`, [id]);
+    // console.log(res.rows);
+    return res.rows;
+  }else{
+    return [];
+  }
+}
+function isValidJSONString(string){
+  try{
+    JSON.parse(string);
+  }catch(e){
+    return false;
+  }
+  return true;
+}
+app.get("/view-notes/:id", async(req, res) =>{
+  const id = parseInt(req.params.id);
+  
+  console.log(id);
+  const book = await fetchBookById(id);
+  if(book){
+    const notesString = book[0].notes;
+    //check if the string from the db is valid JSON and parse it
+    //else attempt to clean it if that helps
+    let cleanedNotes;
+    if (isValidJSONString(notesString)){
+      cleanedNotes=JSON.parse(notesString);
+    }else{
+      cleanedNotes = notesString.replace(/^"\{/, '{').replace(/\}"$/, '}').replace(/\\\\"/g, '"');
+    }
+    
+    // console.log(cleanedNotes);
+    res.status(200).render("viewNotes.ejs",{book, bookNotes: cleanedNotes});
+  }else{
+    res.status(404).render("errorPage.ejs",{error:'Resource not found', errorType:404});
+  }
 });
 //#region search for book both online and local
 app.get('/search',async(req,res)=>{
@@ -279,47 +319,58 @@ app.get('/search',async(req,res)=>{
     fileFilter: fileFilter
   });
 //#endregion
-app.post("/add",upload.single('coverImage'), async(req,res)=>{
-  try{
-    const title=req.body.title;
-    const author=req.body.author;
-    const isbn=req.body.isbn.trim();
-    const notes=req.body.notes
-    const rating = parseFloat(req.body.rating);
- 
-    const lang=req.body.lang;
-    const date_read=req.body.date_read
+app.post("/add", 
+  upload.single('coverImage'),
+  [
+    body('title').trim().notEmpty().withMessage('Title is required'),
+    body('author').trim().notEmpty().withMessage('Author is required'),
+    body('isbn').trim().isISBN().withMessage('Invalid ISBN'),
+    body('rating').isFloat({ min: 0, max: 5 }).withMessage('Rating must be between 0 and 5'),
+    body('lang').trim().notEmpty().withMessage('Language is required'),
+    body('date_read').isDate().withMessage('Invalid date format')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      // Render errorPage.ejs with validation errors
+      return res.status(400).render('errorPage.ejs', { 
+        error: {
+          name: 'ValidationError',
+          message: 'Validation failed',
+          stack: errors.array().map(err => err.msg).join('\n')
+        },
+        errorType: 400
+      });
+    }
+
+    const { title, author, isbn, notes, rating, lang, date_read } = req.body;
     const avatar = req.file ? `${process.env.DEFAULT_TEMP}${isbn}.jpg` : process.env.DEFAULT_COVER;
+    const coverUrl = req.body.imgUrl || avatar;
 
-    const coverUrl=req.body.imgUrl?req.body.imgUrl:avatar;
-    
-    console.log(rating);
-        
-    // Move the file from /temp to /covers after successful upload
-    if (req.file) {
-        const tempPath = path.resolve('public','covers','temp', req.file.filename);
-        const finalPath = path.resolve('public','covers', `${isbn}.jpg`);
+    console.log(notes);
 
-        await rename(tempPath, finalPath); // Move the file
+    try {
+      // Move the file from /temp to /covers after successful upload
+      if (req.file) {
+        const tempPath = path.resolve('public', 'covers', 'temp', req.file.filename);
+        const finalPath = path.resolve('public', 'covers', `${isbn}.jpg`);
+
+        await rename(tempPath, finalPath);
 
         // Optionally copy the renamed file back to temp folder for caching
         const cachedFilePath = path.join('public', 'covers', 'temp', `${isbn}.jpg`);
         await copyFile(finalPath, cachedFilePath);
+      }
+
+      await addBook(title, author, isbn, notes, parseFloat(rating), coverUrl, lang, date_read, avatar);
+
+      res.status(200).redirect("/");
+    } catch (error) {
+      console.error('Error adding book:', error);
+      res.status(500).render('errorPage.ejs', { error, errorType: 500 });
     }
-
-
-  
-      
-        await addBook(title, author,isbn, notes, rating,coverUrl, lang, date_read,avatar);
-
-        res.status(200).redirect("/");
-    }catch(error){
-        console.log(error.stack);
-        res.render('errorPage.ejs', {error, errorType:300});
-    }
-});
-
-
+  }
+);
 //#region Handle shutdown gracefully
 // Handle shutdown
 async function shutdown() {
