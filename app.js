@@ -61,7 +61,10 @@ async function saveBookAndCover(){
 
 }
 
-db.connect();
+db.connect().catch(err=>{
+  console.error(err);
+  process.exit(-1);
+});
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -277,6 +280,7 @@ app.get('/search',async(req,res)=>{
   });
 //#endregion
 app.post("/add",upload.single('coverImage'), async(req,res)=>{
+  try{
     const title=req.body.title;
     const author=req.body.author;
     const isbn=req.body.isbn.trim();
@@ -304,7 +308,7 @@ app.post("/add",upload.single('coverImage'), async(req,res)=>{
     }
 
 
-    try{
+  
       
         await addBook(title, author,isbn, notes, rating,coverUrl, lang, date_read,avatar);
 

@@ -10,6 +10,14 @@
             <%}else{%>
                 <img class="error-img" src="/assets/error-generic.png" alt="error">
                 <p><%=error%>, Error Type: <%=errorType%></p>
+                <p><%= error.message %></p>
+                <% if (error.stack) { %>
+                  <ul>
+                    <% error.stack.split('\n').forEach(function(err) { %>
+                      <li><%= err %></li>
+                    <% }); %>
+                  </ul>
+                <% } %>                
             <%}%>
             <p class="instruct">Please navigate to home by clicking on the home button</p>            
         </div>
