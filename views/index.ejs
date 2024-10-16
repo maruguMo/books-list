@@ -9,7 +9,7 @@
         <% books.forEach(book=>{ %>
             <li>
                 <div class="book-card rounded">
-                    <img class="book-img mb-1 rounded" src="<%=book.avatar %>" alt="<%= book.title%>">
+                    <img class="book-img mb-1 rounded" src="<%=book.avatar %>" alt="<%= book.title%>" data-id="<%=book.id%>" id="book-image">
                     <span class="arial-ital"><strong>Title: </strong> <%= book.title%></span>
                     <span class="arial-ital"><strong>Author: </strong> <%= book.author%></span>
                     <span class="arial-ital"><strong>Language: </strong><i><%=book.lang%></i></span>

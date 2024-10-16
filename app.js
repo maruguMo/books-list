@@ -277,7 +277,7 @@ app.get('/search',async(req,res)=>{
           })
         );
     }
-    res.render('search.ejs',{locRes, remRes});
+    res.render('search.ejs',{locRes, remRes, SearchTerm: searchParams});
   }catch(error){
     // console.log(error.stack);
     res.status(500).render('errorPage.ejs', {error, errorType:500});

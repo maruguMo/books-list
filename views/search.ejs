@@ -1,8 +1,8 @@
 <%- include("partials/header.ejs") %>
-    <p style="text-align: center;">Search results</p>
+    <span style="text-align: center;" class="ModalTitleBar">Search results for: </span><span><%= SearchTerm%></span>
     <hr>
     
-    <h5 >Search results from the open library</h5>
+    <h5>Search results from the open library</h5>
     <div id="openLibResults px-0 py-0">
         <%if( remRes && remRes.length >0){%>
             <ul class="book-list">
@@ -36,11 +36,7 @@
                 <%locRes.forEach((book)=>{%>
                 <li>
                     <div class="book-card">
-                        <%if(book.avatar){ %>
-                            <img class="mb-1 book-img rounded" src="<%=book.avatar%>" alt="No cover available">
-                        <%}else{%>
-                            <img class="mb-1 book-img rounded" src="/covers/DefaultCover.png" alt="No cover available">
-                        <%}%>
+                        <img class="mb-1 book-img rounded" src="<%=book.avatar%>" alt="<%=book.title%>" data-id="<%=book.id%>" id="book-image">
                         <span class="arial-ital"><strong>Title: </strong> <%= book.title%></span>
                         <span class="arial-ital"><strong>Author: </strong> <%=book.author%></span>
                         <span class="arial-ital"><strong>Language: </strong><i><%=book.lang%></i></span>

@@ -97,11 +97,13 @@ h1,h2,h3,h4,h5,h6{
   height: 100%; /* Ensure the card takes up full height */
   border: 1px solid #ddd;
   padding: 5px;
+
 }
 .book-img{
   width: 100%;
   height: 25dvh;
   object-fit: contain;
+  cursor: pointer;
 }
 .book-img-l{
   width: auto;

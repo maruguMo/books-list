@@ -44,20 +44,40 @@ export function initializeRatingSystem() {
 
 }
 export function initializeCommonDOM(){
-    document .querySelectorAll("#view-button").forEach(btn =>{
+    document.querySelectorAll("#view-button").forEach(btn =>{
         btn.addEventListener('click', async ()=>{
             const id = btn.getAttribute('data-id');
             if (id){
-               const resp = await fetch(`/view-notes/${id}`);
+               const route=`/view-notes/${id}`;
+               console.log(route)
+               const resp = await fetchRoute(route);
                console.log(resp);
                
                if(resp.ok){
-                    window.location.href = `/view-notes/${id}`;
-                    // window.location.reload();
+                    window.location.href = route;
                }else{
                 console.error("Error fetching notes:", resp.status);
                }
             }
         });    
     });
+    document.querySelectorAll("#book-image").forEach(crd =>{
+        crd.addEventListener('click', async ()=>{
+            const id = crd.getAttribute('data-id');
+            if (id){
+               const route=`/view-notes/${id}`;
+               
+               const resp = await fetchRoute(route);
+               console.log(resp);
+               if(resp.ok){
+                    window.location.href = route;
+               }else{
+                console.error("Error fetching notes:", resp.status);
+               }
+            }
+        });    
+    });    
+}
+async function fetchRoute(str){
+    return await fetch(str);
 }
