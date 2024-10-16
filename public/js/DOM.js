@@ -1,5 +1,6 @@
 import {showDynamicAlert, showModal, closeModal, 
     fillStars, getQlContent} from '/js/Util.js';
+// import 'dotenv/config';
 export function initializeRatingSystem() {
         // Handle the rating input if it exists
         const valueElement = document.getElementById('rating');
@@ -18,7 +19,7 @@ export function initializeRatingSystem() {
 
     if (valueElement) {
         valueElement.addEventListener('change', (e) => {
-            ratingDisp.innerText = ` My rating: ${e.target.value}`;
+            ratingDisp.innerText = ` ${e.target.value}`;
         });
 
         starsOuter.addEventListener('mousemove', (e) => {
@@ -49,6 +50,7 @@ export function initializeCommonDOM(){
             if (id){
                const resp = await fetch(`/view-notes/${id}`);
                console.log(resp);
+               
                if(resp.ok){
                     window.location.href = `/view-notes/${id}`;
                     // window.location.reload();

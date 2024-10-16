@@ -2,7 +2,7 @@
 .ModalTitleBar{
     position: sticky;
     top: 0; /* Sticks the title bar to the top */
-    background-color: #0074d9;
+    background-color: #010127;
     color: white;
     text-align: center;
     font-size: large;
@@ -10,6 +10,13 @@
     padding: 0;
     text-align: center;
     z-index: 1101;
+}
+.sticky-nav{
+  position: sticky;
+  top: 0; /* Sticks the title bar to the top */
+  margin: 0;
+  padding: 0;
+  z-index: 1101;
 }
 .modal {
     display: none; /* Hidden by default */
@@ -96,6 +103,12 @@ h1,h2,h3,h4,h5,h6{
   height: 25dvh;
   object-fit: contain;
 }
+.book-img-l{
+  width: auto;
+  min-width: 20dvw;
+  max-height: 35dvh;
+  object-fit: contain;
+}
 .book-dets {
   flex-grow: 1; /* Ensure the details section grows to fill space */
 }
@@ -144,8 +157,7 @@ p{
 }
 .pict img{
   height: 25dvh;
-  width: 15dvw;
-  
+  width: 100%;
 }
 .ctrls-flex-c{
   display: flex;
@@ -164,7 +176,7 @@ p{
   align-self: center;
   background-image: url('/covers/DefaultCover.png');
   background-position: center;
-  background-size: cover;
+  background-size: contain;
   /* background-blend-mode: lighten; */
   filter: grayscale(20%) contrast(70%);
   background-blend-mode: darken;
@@ -174,15 +186,16 @@ p{
   object-fit: contain;
 }
 .hide{
-  visibility: hidden;
+  /* visibility: hidden; */
+  display: none;
 }
 
 /* some quill editor formatting and styles */
 .editor{
   overflow-y: auto;
-  height: 40dvh;
+  min-height: 40dvh;
+  height: fit-content;
   box-sizing: border-box;
-  
 }
 .editor p{
   margin-bottom: 0;
@@ -259,6 +272,13 @@ p{
 /* .star-rating{
   margin-bottom: 1px;
 } */
+.rating-label{
+  font-family: arial, 'Open Sans',  sans-serif;
+  font-size:medium;
+  font-style: italic;
+  margin: 5px;;
+}
+
 .arial-ital{
     font-family: 'Open Sans', arial, sans-serif;
     font-size:small;
@@ -274,4 +294,56 @@ p{
   border-radius: 5px;
   height: 65dvh;  
   border: none!important;
+}
+@media (max-width: 932px) {
+  .book-list{
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .editor{
+    overflow-y: auto;
+    height: 20dvh;
+    box-sizing: border-box;
+  }  
+  .stars-outer {
+    display: inline-block;
+    position: relative;
+    font-size: 25px; /* Adjust the size of stars */
+    color: lightgray; /* Empty star color */
+  }
+  .mymodal-content{
+    overflow-y: auto; /* Enable scrolling within the modal */
+    max-height: 90dvh;
+    width: 100%;
+    top: 0; /* Anchored 20% from the top */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Center horizontally */
+    margin: 0; /* Remove any default margin */    
+  }
+  .defa-img{
+    color: white;
+    align-self: center;
+    background-image: url('/covers/DefaultCover.png');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    /* background-blend-mode: lighten; */
+    filter: grayscale(20%) contrast(70%);
+    background-blend-mode: darken;
+    image-rendering: optimizeQuality;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+  .pict img{
+    height: 15dvh;
+    width: 100%;
+  }
+  .flex-ctrls{
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+  }
+  .flex-item-fill{
+    width: 100%;
+  }
 }

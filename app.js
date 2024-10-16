@@ -131,7 +131,7 @@ async function fetchBookRemote(searchParams,searchTerm) {
 
 //add a new book to the database
 async function addBook(title, author, isbn, notes, rating, coverUrl, lang, date_read, avatar){
-  console.log(notes);  
+  // console.log(notes);  
   const res = await db.query(
       `   INSERT INTO booklist (title, author, isbn13, notes,rating, cover_url, lang, date_read, avatar)
           VALUES ($1,$2,$3,$4,$5,$6, $7, $8,$9)`,
@@ -207,7 +207,7 @@ function isValidJSONString(string){
 app.get("/view-notes/:id", async(req, res) =>{
   const id = parseInt(req.params.id);
   
-  console.log(id);
+  // console.log(id);
   const book = await fetchBookById(id);
   if(book){
     const notesString = book[0].notes;

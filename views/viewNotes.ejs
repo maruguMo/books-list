@@ -1,33 +1,45 @@
 <%- include("partials/header.ejs") %>
     <%if(book){%>
-    <div class="book-dets p-2" id="book-details">
-        <div class="book-header">
-            <dl class="book-info">
-                <dt>Title:</dt> <dd><%= book[0].title %></dd>
-                <dt>Author:</dt><dd><%= book[0].author %></dd>
-                <dt>ISBN:</dt><dd><%= book[0].isbn13%></dd>
-                <dt>Language:</dt><dd><%= book[0].lang %></dd>
-            </dl>
-        </div>
+        <div class="row">
+            <div class="col-3 py-2">
+                <img src="<%=book[0].avatar%>" alt="book avatar" class="book-img-l mt-2 rounded">
+            </div>
+            <div class="col-9 py-5">
+                <div class="book-info">
+                    <h3><%= book[0].title.toUpperCase() %>- BY <%= book[0].author.toUpperCase() %> </h3>
+                    <p>ISBN: <%=book[0].isbn13%></p>
+                    <p>LANGUAGE: <%= book[0].lang.toUpperCase() %></p>
+                    <span>DATE READ: <%= book[0].date_read %></span>
+                    <hr>
+                    <div class="rating-container">
+                        <span class="star-rating arial-ital"  data-rating="<%=book[0].rating%>" 
+                                                              data-id= "<%=book[0].id%>">
+                                                              MY RATING: <%=book[0].rating%>/5
+                        </span>                        
+                        <div class="rating">
+                            <div class="stars-outer">
+                            <div class="stars-inner" id="book-<%=book[0].id%>"></div>
+                            </div>
+                        </div>
+                    </div>                    
+                </div>
+            </div>
+            </div>
         <hr>
-        <div class="notes-section ql-container ql-editor ql-snow" id="editor">
-            <%- bookNotes %>
+        <div class="row">
+            <div class="ModalTitleBar"><strong>MY NOTES ABOUT THE BOOK</strong></div>
+            <div class="notes-section ql-container ql-editor ql-snow" id="editor"> 
+                <%- bookNotes %>
+            </div>
         </div>
-    </div>
     <%}else{%>
         <p class="instruct"> Oof! That didn't quite work. Please navigate to home and try again</p>
     <%}%>
 
     <script type="module">
+        import {initializeRatingSystem, initializeCommonDOM } from '/js/DOM.js';
         document.addEventListener('DOMContentLoaded', ()=>{
-        // //this will be used exclusively by view notes ejs
-        //     const notesViewer=document.getElementById("editor");
-        //     const rawNotes = "<%= bookNotes%>";
-
-        //     const cleanedNotes = rawNotes.replace(/^"\{/, '{').replace(/\}"$/, '}').replace(/\\\\"/g, ''); // Clean the string    
-        //     notesViewer.innerHTML = cleanedNotes;
-
-        //     //<%- bookNotes %>
+            initializeRatingSystem();
         });
     </script>
 <%- include("partials/footer.ejs") %>
