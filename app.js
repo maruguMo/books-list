@@ -169,11 +169,15 @@ async function fetchBookLocal(searchParams, isISBN=false) {
   let query;
   const values=[searchParams];
   if (isISBN){
-      query="SELECT * FROM booklist WHERE isbn13 = $1";
+      query=`SELECT * 
+             FROM booklist 
+             WHERE isbn13 ILIKE $1`;
   }else{
-    query= `SELECT * FROM booklist
-            WHERE author LIKE $1
-            OR title LIKE $1`;
+    query= `SELECT * 
+            FROM booklist
+            WHERE author ILIKE $1
+            OR title ILIKE $1
+            OR notes ILIKE $1`;
   }
   console.log(values);
   const res= await db.query(query, values);
@@ -236,7 +240,7 @@ app.get('/search',async(req,res)=>{
   const searchBy=req.query.searchBy;
 
   const isISBN=searchBy==='ISBN';
-  const dbSearchParams=isISBN?req.query.search:`%${req.query.search}%`;
+  const dbSearchParams=`%${req.query.search}%`;
 
   try{
     const books = await getList();
