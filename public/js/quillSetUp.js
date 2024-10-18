@@ -10,12 +10,10 @@
          [{ 'font': Font.whitelist }, { 'size': [] }],
          ['bold', 'italic', 'underline', 'strike'],
          [{ 'color': [] }, { 'background': [] }],
-         [{ 'script': 'sub' }, { 'script': 'super' }],
-         [{ 'header': '1' }, { 'header': '2' }, 'blockquote', 'code-block'],
+         [{ 'header': '1' }, { 'header': '2' }, { 'header': '3' },{ 'header': '4' },{ 'header': '5' },{ 'header': '6' }, 'blockquote', 'code-block'],
          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
          [{ 'direction': 'rtl' }],
          [{ 'align': [] }],
-         ['link', 'image'],
          ['clean'] // remove formatting button
        ]
      }

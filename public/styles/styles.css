@@ -32,10 +32,9 @@
   .mymodal-content {
     background-color: white;
     border: 1px solid #888;
-    width: 70%; /* Cover at least 60% of the width */
+    width: 50%; /* Cover at least 60% of the width */
     height: 100%; /* Cover at least 60% of the height */
     max-width: 80%; /* Max width is 80% of viewport */
-    max-height: 95%; /* Max height is 95% of viewport */
     overflow-y: auto; /* Enable scrolling within the modal */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: add some shadow for better visual */
     border-radius: 10px; /* Optional: add border radius */
@@ -195,9 +194,20 @@ p{
 /* some quill editor formatting and styles */
 .editor{
   overflow-y: auto;
-  min-height: 40dvh;
+  min-height: 45dvh;
   height: fit-content;
-  box-sizing: border-box;
+  /* box-sizing: border-box; */
+  
+}
+.editor-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+}
+.editor, .ql-toolbar, .notes-header {
+  width: 48dvw;
+  border-radius: 5px;
 }
 .editor p{
   margin-bottom: 0;
@@ -205,6 +215,9 @@ p{
 .ql-editor {
   font-family: 'Poppins', 'Roboto',Verdana,'Open Sans', sans-serif; /* Set the default font family here */
   font-size: 15px; /* Set the default font size here */
+}
+.ql-toolbar {
+  flex-wrap: wrap;
 }
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="Poppins"]::before,
 .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="Poppins"]::before {
@@ -301,6 +314,12 @@ p{
   .book-list{
     grid-template-columns: repeat(2, 1fr);
   }
+  .editor-container{
+    min-height: 30dvh;
+  }
+  .ql-toolbar{
+    font-size: small;
+  }
   .editor{
     overflow-y: auto;
     height: 20dvh;
@@ -347,5 +366,9 @@ p{
   }
   .flex-item-fill{
     width: 100%;
+  }
+  .editor, .ql-toolbar, .notes-header {
+    width: 100%;
+    border-radius: 5px;
   }
 }

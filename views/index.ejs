@@ -46,7 +46,7 @@
                             <img  alt="Add a book image" class="rounded border defa-img" id="book-cover-preview">
                             <hr>
                             <div class="ctrls-flex-c btn-group mb-1 p-1">
-                                <input type="file" name="coverImage" id="coverImage" class="form-control mb-2 btn btn-primary" accept="image/*">
+                                <input type="file" name="coverImage" id="coverImage" class="form-control form-control-md mb-2 btn btn-primary" accept="image/*" placeholder="choose...">
                             </div>
                         </div>
                     </div>
@@ -96,18 +96,17 @@
                         </div>                                     
                     </div>
                 </div>
-                <div class="row p-0">
-                    <div class="col-12 col-sm-12 mx-auto p-2 col-md-12">
-                        <p class="form-label ModalTitleBar" >Notes about the book</p>
-                        <div  id="editor" class="editor"> </div>
+                    <div class="editor-container mb-3">
+                        <p class="notes-header ModalTitleBar rounded" >My notes about this book</p>
+                        <div  id="editor" class="editor "> </div>
                         <input type ="hidden" name="notes" id="add-notes" />
-                </div>
+                    </div>
                 <div class="row p-0">
-                    <div class="col-12 col-sm-12 col-md-12 d-flex justify-content-end p-0 flex-ctrls">
+                    <div class="col-12 col-sm-12 col-md-12 d-flex justify-content-center p-2 flex-ctrls">
                         <input type="hidden" name="notes" id="add-notes">
                         <input type="hidden" name="imgUrl" id="img-Url">
-                        <button class="btn btn-secondary mb-1 ms-2 flex-item-fill" id="reset-add" type="reset">Reset</button>
-                        <button class="btn btn-primary mb-1 ms-2 flex-item-fill" id="submit-Add" type="submit">Submit</button>
+                        <button class="btn btn-secondary mb-1 ms-2 flex-fill" id="reset-add" type="reset">Reset</button>
+                        <button class="btn btn-primary mb-1 ms-2 flex-fill" id="submit-Add" type="submit">Submit</button>
                     </div>
                 </div>
             </form>
