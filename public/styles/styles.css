@@ -145,6 +145,18 @@ p{
 .menu-bar{
   margin-top: 10px;
   margin-bottom: 10px;
+  display:flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+.sort-items{
+  padding: 3px;
+  align-items: center;
+}
+.winded{
+  height: fit-content;
+  width: fit-content;
 }
 .error-img{
   height: 50dvh;
@@ -206,7 +218,7 @@ p{
 
 }
 .editor, .ql-toolbar, .notes-header {
-  width: 48dvw;
+  min-width: 48dvw;
   border-radius: 5px;
 }
 .editor p{

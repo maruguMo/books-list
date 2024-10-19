@@ -75,10 +75,21 @@ app.set('view engine', 'ejs');
 app.set('views', './views');
 
 //get all books
-async function getList(){
-    const res= await db.query(
-        `SELECT * FROM booklist ORDER BY id ASC`
-    );
+async function getList( sortBy='date_read', sortDirection='DESC'){
+  const validSortColumns = ['title', 'author', 'date_read', 'rating'];
+  const validSortDirections = ['ASC', 'DESC'];
+
+  // Validate sortBy and sortDirection
+  if (!validSortColumns.includes(sortBy)) {
+      sortBy = 'date_read'; // Default sorting
+  }
+  if (!validSortDirections.includes(sortDirection)) {
+      sortDirection = 'DESC'; // Default sorting direction
+  }
+    const res=await db.query(`
+                        SELECT *
+                        FROM booklist
+                        ORDER BY ${sortBy} ${sortDirection}`);
     // console.log(res.rows);
     return res.rows;
 }
@@ -183,13 +194,23 @@ async function fetchBookLocal(searchParams, isISBN=false) {
   const res= await db.query(query, values);
   return res.rows;
 }
+
+//sort route
+app.get("/sort", async(req, res)=>{
+  const {sortBy, sortdirection}=req.query;
+  if (sortBy.trim()===''|| sortdirection.trim()===''){
+      res.redirect('/');
+  }else{
+      const books = await getList(sortBy,sortdirection);
+      console.log(books);
+      res.render("index.ejs", {books, sortBy, sortdirection});
+  }
+});
 // the get '/' route
 app.get("/", async(req, res)=>{
     const books = await getList();
     // console.log(books)
-    const locRes=null;
-    const remRes=null;
-    res.render("index.ejs", {books, locRes, remRes});
+    res.render("index.ejs", {books});
 });
 async function fetchBookById(id){
   if(id){
@@ -375,6 +396,24 @@ app.post("/add",
     }
   }
 );
+
+
+// edit notes functionality
+async function updateNotes(id, notes){
+  const qry=` UPDATE booklist
+              SET notes = $2
+              WHERE id = 1`;
+  const values=[id,JSON.stringify(notes)];
+  const res=db.query(qry, values);
+  console.log(res);
+}
+app.post("/edit-notes", async(req,res) =>{
+  const id = parseInt(req.body.id);
+  const notes=req.body.notes;
+  if (id){
+    await updateNotes(id, notes);
+  }
+});
 //#region Handle shutdown gracefully
 // Handle shutdown
 async function shutdown() {
