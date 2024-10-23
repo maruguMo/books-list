@@ -1,7 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
-import pg from "pg";
-import axios from "axios";
+
 import 'dotenv/config';
 import fs from 'fs';
 import { promisify } from 'util';
@@ -12,6 +11,11 @@ import { constants } from 'fs';
 import multer from 'multer'
 import { body, validationResult } from 'express-validator';
 
+import { getList, shutdown, addBook, updateBook, 
+        fetchBookLocal, updateBookCover, updateNotes } from './database.js'
+
+import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js";
+
 const app = express();
 const PORT = process.env.APP_PORT;
 
@@ -20,13 +24,7 @@ const __dirname = path.dirname(__filename);
 
 const baseUrl = process.env.BASE_URL;
 
-const db = new pg.Client({
-  user: process.env.DB_USER,
-  host: process.env.HOST,
-  database: process.env.DB,
-  password: process.env.PASS,
-  port:process.env.DB_PORT,
-});
+
 
 // Function to check if a file exists
 async function fileExists(filePath) {
@@ -38,34 +36,6 @@ async function fileExists(filePath) {
   }
 }
 
-async function downloadImage(url, fileName) {
-  const imagePath = path.resolve('public','covers','temp', `${fileName}.jpg`);
-  const writer = fs.createWriteStream(imagePath);
-
-  try {
-    const response = await axios({
-      url,
-      method: 'GET',
-      responseType: 'stream'
-    });
-
-    response.data.pipe(writer);
-
-    writer.on('finish', () => console.log(`Saved: ${imagePath}`));
-    writer.on('error', (err) => console.error('Error writing image:', err));
-  } catch (error) {
-    console.error('Error downloading image:', error.message);
-  }
-} 
-async function saveBookAndCover(){
-
-}
-
-db.connect().catch(err=>{
-  console.error(err);
-  process.exit(-1);
-});
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(express.static('js'));
@@ -73,142 +43,6 @@ app.use(express.json());
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
-
-//get all books
-async function getList( sortBy='date_read', sortDirection='DESC'){
-  const validSortColumns = ['title', 'author', 'date_read', 'rating'];
-  const validSortDirections = ['ASC', 'DESC'];
-
-  // Validate sortBy and sortDirection
-  if (!validSortColumns.includes(sortBy)) {
-      sortBy = 'date_read'; // Default sorting
-  }
-  if (!validSortDirections.includes(sortDirection)) {
-      sortDirection = 'DESC'; // Default sorting direction
-  }
-    const res=await db.query(`
-                        SELECT *
-                        FROM booklist
-                        ORDER BY ${sortBy} ${sortDirection}`);
-    // console.log(res.rows);
-    return res.rows;
-}
-
-
-// Function to get book details by title or ISBN
-async function fetchBookRemote(searchParams,searchTerm) {
-
-  let remURL=process.env.BASE_URL;
-  switch(searchTerm){
-    case  'ISBN':
-      remURL +=`?isbn=${searchParams}&page=1,sort=new`;
-      break;
-    case 'Author':
-      remURL +=`?author=${searchParams}&page=1,sort=new`;
-      break;
-    case 'Title':
-      remURL +=`?title=${searchParams}&page=1,sort=new`;
-      break;
-    default:
-      remURL +=`?q=${searchParams}&page=1,sort=new`;
-      break;
-  }
-  console.log(remURL);
-  try{
-    const res=await axios.get(remURL);
-    // console.log('data:', res.data);
-    return res.data;
-  } catch (error) {
-    if (error.response) {
-      // Server responded with a status other than 2xx
-      // console.log('Error Status:', error.response.status);
-      // console.log('Error Data:', error.response.data);
-      // return error.response.status;
-      console.log('Server responded with a status other than 2xx');
-    } else if (error.request) {
-      // Request was made, but no response was received
-      // console.log('No response received:', error.request);
-      console.log('No response received. Request might be bad');
-    } else {
-      // Something else happened while setting up the request
-      // console.log('Error Message:', error.message);
-      console.log('something else happened');
-    }
-    return null;
-  }
-}
-// Function to download and save the image
- 
-
-//add a new book to the database
-async function addBook(title, author, isbn, notes, rating, coverUrl, lang, date_read, avatar){
-  const res = await db.query(
-      `   INSERT INTO booklist (title, author, isbn13, notes,rating, cover_url, lang, date_read, avatar)
-          VALUES ($1,$2,$3,$4,$5,$6, $7, $8,$9)`,
-            [title, author, isbn, JSON.stringify(notes), rating, coverUrl, lang, date_read,avatar]
-    );
-}  
-async function updateBook(author, isbn, notes, rating, coverUrl, lang, date_read, avatar, id){
-  const res = await db.query(
-    `   UPDATE  
-            booklist  
-        SET title = $1, 
-            author = $2, 
-            isbn13 =$3, 
-            notes = $4,
-            rating =$5, 
-            cover_url = $6, 
-            lang = $7, 
-            date_read = $8 , 
-            avatar =$9
-        WHERE
-            id = $10 )`,
-          [title, author, isbn, JSON.stringify(notes), rating, coverUrl, lang, date_read,avatar, id]
-  );
-
-}
-// Function to update the book cover URL in the database
-async function updateBookCover(identifier, coverUrl, avatar,isISBN) {
-    let query;
-    let values;
-    values = [coverUrl, identifier, avatar];
-    if (isISBN) {
-      query = `UPDATE booklist SET cover_url = $1, 
-      avatar = $3
-      WHERE isbn13 = $2`;
-    } else {
-      query = `UPDATE booklist SET cover_url = $1,
-      avatar = $3 
-      WHERE title = $2`;
-    }
-  
-    try {
-      await db.query(query, values);
-      console.log('Book cover URL updated in the database');
-    } catch (error) {
-      console.error('Error updating the database:', error.message);
-    }
-  }
-
-async function fetchBookLocal(searchParams, isISBN=false) {
-  //check author or title or ISBN
-  let query;
-  const values=[searchParams];
-  if (isISBN){
-      query=`SELECT * 
-             FROM booklist 
-             WHERE isbn13 ILIKE $1`;
-  }else{
-    query= `SELECT * 
-            FROM booklist
-            WHERE author ILIKE $1
-            OR title ILIKE $1
-            OR notes ILIKE $1`;
-  }
-  console.log(values);
-  const res= await db.query(query, values);
-  return res.rows;
-}
 
 //sort route
 app.get("/sort", async(req, res)=>{
@@ -327,9 +161,9 @@ app.get('/search',async(req,res)=>{
 //#region 
 
 //#region  multer middleware region for image uploading
-  const rename = promisify(fs.rename);
-  const copyFile = promisify(fs.copyFile);
-  const unlink = promisify(fs.unlink);
+    const rename = promisify(fs.rename);
+    const copyFile = promisify(fs.copyFile);
+    const unlink = promisify(fs.unlink);
 // Helper function to generate a random 6-digit filename
   function generateRandomFileName() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -387,8 +221,6 @@ app.post("/add",
     const avatar = req.file ? `${process.env.DEFAULT_TEMP}${isbn}.jpg` : process.env.DEFAULT_COVER;
     const coverUrl = req.body.imgUrl || avatar;
 
-    console.log(notes);
-
     try {
       // Move the file from /temp to /covers after successful upload
       if (req.file) {
@@ -414,18 +246,10 @@ app.post("/add",
 //edit book functionality
 app.post("/edit/:id", upload.single('coverImage'), async(req, res)=>{
 
-  
+
   res.status(200).redirect("/");
 })
-// edit notes functionality
-async function updateNotes(id, notes){
-  const qry=` UPDATE booklist
-              SET notes = $2
-              WHERE id = 1`;
-  const values=[id,JSON.stringify(notes)];
-  const res=db.query(qry, values);
-  console.log(res);
-}
+
 app.post("/edit-notes", async(req,res) =>{
   const id = parseInt(req.body.id);
   const notes=req.body.notes;
@@ -451,13 +275,7 @@ function formatDate(dateString) {
 // Expose the function in your app (if using Express)
 app.locals.formatDate = formatDate;
 //#region Handle shutdown gracefully
-// Handle shutdown
-async function shutdown() {
-    console.log('Shutting down gracefully...');
-    await db.end();
-    process.exit(0);
-  }
-  
+
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
 //#endregion
