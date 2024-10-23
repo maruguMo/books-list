@@ -77,7 +77,16 @@ export async function fetchBookLocal(searchParams, isISBN=false) {
     // console.log(values);
     const res= await db.query(query, values);
     return res.rows;
-  }  
+  } 
+  export async function fetchBookById(id){
+    if(id){
+      const res= await db.query(` SELECT * FROM booklist WHERE id = $1`, [id]);
+      // console.log(res.rows);
+      return res.rows;
+    }else{
+      return [];
+    }
+  }   
 // Function to update the book cover URL in the database
 export async function updateBookCover(identifier, coverUrl, avatar,isISBN) {
     let query;

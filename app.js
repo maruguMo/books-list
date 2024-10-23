@@ -11,7 +11,7 @@ import { constants } from 'fs';
 import multer from 'multer'
 import { body, validationResult } from 'express-validator';
 
-import { getList, shutdown, addBook, updateBook, 
+import { getList, shutdown, addBook, updateBook, fetchBookById,
         fetchBookLocal, updateBookCover, updateNotes } from './database.js'
 
 import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js";
@@ -61,15 +61,7 @@ app.get("/", async(req, res)=>{
     // console.log(books)
     res.render("index.ejs", {books});
 });
-async function fetchBookById(id){
-  if(id){
-    const res= await db.query(` SELECT * FROM booklist WHERE id = $1`, [id]);
-    // console.log(res.rows);
-    return res.rows;
-  }else{
-    return [];
-  }
-}
+
 function isValidJSONString(string){
   try{
     JSON.parse(string);
