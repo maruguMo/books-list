@@ -149,9 +149,9 @@ p{
   flex-direction: row;
   justify-content: space-between;
   width: 100%;
+  flex: 1 1 0px;
 }
 .sort-items{
-  padding: 3px;
   align-items: center;
 }
 .winded{
@@ -184,6 +184,16 @@ p{
 .dark{
   background-color:rgb(236 237 243)
 }
+/* Inactive button style (default) */
+
+/* .sort-btn {
+  color: #212529; 
+}
+
+.sort-btn.active {
+  color: #0062cc; 
+} */
+
 .defa-img{
   color: white;
   align-self: center;

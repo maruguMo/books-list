@@ -142,16 +142,31 @@ async function fetchBookRemote(searchParams,searchTerm) {
 
 //add a new book to the database
 async function addBook(title, author, isbn, notes, rating, coverUrl, lang, date_read, avatar){
-  // console.log(notes);  
   const res = await db.query(
       `   INSERT INTO booklist (title, author, isbn13, notes,rating, cover_url, lang, date_read, avatar)
           VALUES ($1,$2,$3,$4,$5,$6, $7, $8,$9)`,
             [title, author, isbn, JSON.stringify(notes), rating, coverUrl, lang, date_read,avatar]
     );
-    
-    // console.log(res);
 }  
+async function updateBook(author, isbn, notes, rating, coverUrl, lang, date_read, avatar, id){
+  const res = await db.query(
+    `   UPDATE  
+            booklist  
+        SET title = $1, 
+            author = $2, 
+            isbn13 =$3, 
+            notes = $4,
+            rating =$5, 
+            cover_url = $6, 
+            lang = $7, 
+            date_read = $8 , 
+            avatar =$9
+        WHERE
+            id = $10 )`,
+          [title, author, isbn, JSON.stringify(notes), rating, coverUrl, lang, date_read,avatar, id]
+  );
 
+}
 // Function to update the book cover URL in the database
 async function updateBookCover(identifier, coverUrl, avatar,isISBN) {
     let query;
@@ -202,7 +217,7 @@ app.get("/sort", async(req, res)=>{
       res.redirect('/');
   }else{
       const books = await getList(sortBy,sortdirection);
-      console.log(books);
+      // console.log(books);
       res.render("index.ejs", {books, sortBy, sortdirection});
   }
 });
@@ -396,8 +411,12 @@ app.post("/add",
     }
   }
 );
+//edit book functionality
+app.post("/edit/:id", upload.single('coverImage'), async(req, res)=>{
 
-
+  
+  res.status(200).redirect("/");
+})
 // edit notes functionality
 async function updateNotes(id, notes){
   const qry=` UPDATE booklist
@@ -414,6 +433,23 @@ app.post("/edit-notes", async(req,res) =>{
     await updateNotes(id, notes);
   }
 });
+
+// A utility function to format dates
+// A utility function to format dates to "dddd mmmm d yyyy"
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const dayName = weekdays[date.getDay()]; // Get the name of the day
+  const monthName = months[date.getMonth()]; // Get the name of the month
+  const day = date.getDate(); // Get the day of the month
+  const year = date.getFullYear(); // Get the full year
+
+  return `${dayName}, ${monthName}-${day} ${year}`;
+}
+// Expose the function in your app (if using Express)
+app.locals.formatDate = formatDate;
 //#region Handle shutdown gracefully
 // Handle shutdown
 async function shutdown() {

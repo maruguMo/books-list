@@ -30,13 +30,14 @@
     </div>
     <hr>
     <h5>Similar books already added</h5>
-    <div id="localDbResults">
+    <div id="book-container" data-books='<%= JSON.stringify(books) %>'>
         <%if(locRes && locRes.length > 0){%>
             <ul class="book-list px-0 py-0">
                 <%locRes.forEach((book)=>{%>
                 <li>
                     <div class="book-card">
-                        <img class="mb-1 book-img rounded" src="<%=book.avatar%>" alt="<%=book.title%>" data-id="<%=book.id%>" id="book-image">
+                        <img class="mb-1 book-img rounded book-image" src="<%=book.avatar%>" 
+                            alt="<%=book.title%>" data-id="<%=book.id%>" id="book-image-<%=book.id%>">
                         <span class="arial-ital"><strong>Title: </strong> <%= book.title%></span>
                         <span class="arial-ital"><strong>Author: </strong> <%=book.author%></span>
                         <span class="arial-ital"><strong>Language: </strong><i><%=book.lang%></i></span>
@@ -50,9 +51,9 @@
                             <span class="star-rating arial-ital"  data-rating="<%=book.rating%>" data-id="<%=book.id%>" > <%=book.rating%>/5</span>
                         </div>
                         <div class="ctrls-container gap-1">
-                            <button class="ctrls btn btn-dark btn-sm" id="view-button" data-id="<%=book.id%>">More...</button>
-                            <button class="ctrls btn btn-dark btn-sm" id="edit-button" data-id="<%=book.id%>">Edit</button>
-                            <button class="ctrls  btn btn-dark btn-sm" id="del-button" data-id="<%=book.id%>">Delete</button>
+                            <button class="ctrls btn btn-dark btn-sm view-button" id="view-button-<%=book.id%>" data-id="<%=book.id%>">More...</button>
+                            <button class="ctrls btn btn-dark btn-sm edit-button" id="edit-button-<%=book.id%>" data-id="<%=book.id%>">Edit</button>
+                            <button class="ctrls  btn btn-dark btn-sm del-button" id="del-button-<%=book.id%>" data-id="<%=book.id%>">Delete</button>
                         </div>
                     </div>
                 </li>
@@ -62,6 +63,83 @@
             <p class="px-2 py-0"><i>No results from local repository</i></p>
         <%}%> 
     </div>
+    <div class="modal" id="add-newBk">
+        <div class="mymodal-content container container-lg container-md container-sm dark">
+            <div class="ModalTitleBar">Add a new book <span class="close" id="closeAddModal">&times;</span></div>
+            <form action="/add"  id="add-new" method="POST" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-lg-3 mt-2 col-sm-12 col-md-12">
+                        <div class="pict">
+                            <img  alt="Add a book image" class="rounded border defa-img" id="book-cover-preview">
+                            <hr>
+                            <div class="ctrls-flex-c btn-group mb-1 p-1">
+                                <input type="file" name="coverImage" id="coverImage" class="form-control form-control-md mb-2 btn btn-primary" accept="image/*" placeholder="choose...">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-9 mt-2 col-sm-12 col-md-12">
+                        <div class="row mt-2">
+                            <div class="col-6 mb-1 col-sm-12 col-md-12">
+                                <!-- <label for="title" class="form-label">Title</label> -->
+                                <input type="text" name="title" id="title" class="form-control" required placeholder="Title">
+                            </div>
+                            <div class="col-6 col-sm-12 mb-1 col-md-12">
+                                <!-- <label for="author" class="form-label">Author </label> -->
+                                <input type="text" name="author" id="author" class="form-control" required placeholder="Author">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-6 mb-1 col-sm-12 col-md-12">
+                                <!-- <label for="title" class="form-label">ISBN</label> -->
+                                <input type="text" name="isbn" id="isbn" class="form-control mb-1" required maxlength="15" placeholder="ISBN">
+                                <button class="btn btn-primary rounded hide" id="search-online">Search for Cover Online</button>
+                            </div>
+                            <div class="col-6 mb-1 col-sm-12 col-md-12">
+                                <!-- <label for="lang" class="form-label">Language </label> -->
+                                <input type="text" name="lang" id="lang" class="form-control" required placeholder="Language">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-6 mb-1 col-sm-12 col-md-12 col-auto">
+                                <div class="row g-3 align-items-center px-1">
+                                    <div class="col-auto">
+                                        <label for="date_read" class="col-form-label fs-6">Date read</label>
+                                    </div>
+                                    <div class="col-auto">
+                                        <input type="date" name="date_read" id="date_read" class="form-control" required placeholder="Date read">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-sm-12 mb-1 col-md-12">
+                                <label class="form-label rating-label mx-2">Rating</label>
+                                <input type="hidden" name="rating" id="rating" class="form-control" required placeholder="Rating">
+                                <div class="rating" data-rating="0" id="rating-add">
+                                    <div class="stars-outer" id="rating-add-outer">
+                                      <div class="stars-inner" id="rating-add-inner"></div>
+                                    </div>
+                                  </div>
+                                  <span  class="rating-show rating-label" id="rating-disp"></span>
+                            </div>
+                        </div>                                     
+                    </div>
+                </div>
+                    <div class="editor-container mb-3">
+                        <p class="notes-header ModalTitleBar rounded" >My notes about this book</p>
+                        <div  id="editor" class="editor "> </div>
+                        <input type ="hidden" name="notes" id="add-notes" />
+                    </div>
+                <div class="row p-0">
+                    <div class="col-12 col-sm-12 col-md-12 d-flex justify-content-center p-2 flex-ctrls">
+                        <input type="hidden" name="notes" id="add-notes">
+                        <input type="hidden" name="imgUrl" id="img-Url">
+                        <button class="btn btn-secondary mb-1 ms-2 flex-fill" id="reset-add" type="reset">Reset</button>
+                        <button class="btn btn-primary mb-1 ms-2 flex-fill" id="submit-Add" type="submit">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script type="module">
         import { createQuillEditor } from  '/js/quillSetUp.js';
         import { showDynamicAlert, showModal, closeModal, 

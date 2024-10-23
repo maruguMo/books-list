@@ -44,7 +44,7 @@ export function initializeRatingSystem() {
 
 }
 export function initializeCommonDOM(){
-    document.querySelectorAll("#view-button").forEach(btn =>{
+    document.querySelectorAll(".view-button").forEach(btn =>{
         btn.addEventListener('click', async ()=>{
             const id = btn.getAttribute('data-id');
             if (id){
@@ -61,7 +61,7 @@ export function initializeCommonDOM(){
             }
         });    
     });
-    document.querySelectorAll("#book-image").forEach(crd =>{
+    document.querySelectorAll(".book-image").forEach(crd =>{
         crd.addEventListener('click', async ()=>{
             const id = crd.getAttribute('data-id');
             if (id){
@@ -78,6 +78,67 @@ export function initializeCommonDOM(){
         });    
     });    
 }
+export function initializeEdits(books, qlEditor){
+    //initialize the book editing function regardless of the view
+    //assume there is a common edit modal on both views
+    document.querySelectorAll('.edit-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const bookId = e.target.dataset.id;
+            const book = getBookById(bookId, books, button); // Replace with actual data fetching logic
+            openEditModal(book, qlEditor);
+        });
+    });
+
+}
+function openEditModal(book, qlEditor) {
+    // Set the modal title
+    document.querySelector('.ModalTitleBar').innerHTML = `<div class="ModalTitleBar">Edit Book <span class="close" id="closeAddModal">&times;</span></div>`;
+    const closeAddBtn=document.getElementById('closeAddModal');
+    const addNewForm=document.getElementById('add-new');
+    const addEditModal=document.getElementById('add-newBk');
+    // Populate the form fields with book data
+    document.getElementById('title').value = book.title;
+    document.getElementById('author').value = book.author;
+    document.getElementById('isbn').value = book.isbn;
+    document.getElementById('lang').value = book.lang;
+    document.getElementById('date_read').value = book.date_read;
+    document.getElementById('rating').value = book.rating;
+
+    // If there are book notes
+    isValidJSONString(book.notes)? qlEditor.root.innerHTML=JSON.parse(book.notes) : qlEditor.root.innerHTML=book.notes;
+    
+    // Set the book cover
+    document.getElementById('book-cover-preview').src = book.avatar || '/covers/default-cover.png';
+
+    // Update form action to 'edit'
+    addNewForm.action = `/edit/${book.id}`;
+
+    // Change the button text to "Update"
+    document.getElementById('submit-Add').innerText = "Update";
+
+    // Show the modal
+    showModal(addEditModal);
+    closeAddBtn.onclick=()=>{
+        closeModal(addEditModal);
+    }
+}
+function getBookById(id, books, target){
+    const bk=books.find(bk => parseInt(bk.id)===parseInt(id));
+    if(bk){
+        return bk;
+    }else{
+        showDynamicAlert(`an error getting book by id ${id}`,target);
+        console.log(`an error getting book by id ${id}`);
+    }
+    
+}
 async function fetchRoute(str){
     return await fetch(str);
-}
+}function isValidJSONString(string){
+    try{
+      JSON.parse(string);
+    }catch(e){
+      return false;
+    }
+    return true;
+  }
