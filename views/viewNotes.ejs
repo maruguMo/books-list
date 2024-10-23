@@ -1,15 +1,15 @@
 <%- include("partials/header.ejs") %>
         <%if(book){%>
-            <div class="row">
-                <div class="col-3 py-2">
-                    <img src="<%=book[0].avatar%>" alt="book avatar" class="book-img-l mt-2 rounded">
+            <div class="row d-flex">
+                <div class="col-lg-3 col-md-6 col-sm-6 col-12 text-center mb-2">
+                    <img src="<%=book[0].avatar%>" alt="book avatar" class="book-img-l mt-2 rounded img-fluid">
                 </div>
-                <div class="col-9 py-5">
+                <div class="col-9 col-md-6 col-sm-6 col-12">
                     <div class="book-info">
-                        <h3><%= book[0].title.toUpperCase() %>- BY <%= book[0].author.toUpperCase() %> </h3>
-                        <p>ISBN: <%=book[0].isbn13%></p>
-                        <p>LANGUAGE: <%= book[0].lang.toUpperCase() %></p>
-                        <span>DATE READ: <%= book[0].date_read %></span>
+                        <p class="fs-4 fs-lg-3"><%= book[0].title.toUpperCase() %>- BY <%= book[0].author.toUpperCase() %> </p>
+                        <p class="fs-4 fs-lg-3">ISBN: <%=book[0].isbn13%></p>
+                        <p class="fs-4 fs-lg-3">LANGUAGE: <%= book[0].lang.toUpperCase() %></p>
+                        <span class="fs-4 fs-lg-3">DATE READ: <%= formatDate(book[0].date_read) %></span>
                         <hr>
                         <div class="rating-container">
                             <span class="star-rating arial-ital"  data-rating="<%=book[0].rating%>" 
@@ -48,6 +48,8 @@
     <script type="module">
         import {initializeRatingSystem, initializeCommonDOM } from '/js/DOM.js';
         import { createQuillEditor } from  '/js/quillSetUp.js';
+        import {showDynamicAlert, showModal, closeModal, 
+            fillStars, getQlContent, formatDate} from '/js/Util.js';
         document.addEventListener('DOMContentLoaded', ()=>{
             const btnEdit = document.getElementById('edit-button');
             const sendForm=document.getElementById('change-notes');

@@ -110,6 +110,27 @@ export async function updateBookCover(identifier, coverUrl, avatar,isISBN) {
     }
   }
 // edit notes functionality
+export async function getISBN(id){
+    //delete the book
+    const query = ` SELECT isbn13
+                    FROM booklist
+                    WHERE id = $1`;
+    const res = await db.query(query,[id]);
+    console.log(res.rows);
+    if (res.rows.length>0){
+        return res.rows[0].isbn13;
+    }else{
+        return false;
+    }
+}
+export async function deleteBook(id){
+    //delete the book
+    const query = ` DELETE
+                    FROM booklist
+                    WHERE id = $1`;
+    const res = await db.query(query,[id]);
+    return res;
+}
 export async function updateNotes(id, notes){
     const qry=` UPDATE booklist
                 SET notes = $2

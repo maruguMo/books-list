@@ -1,5 +1,5 @@
 import {showDynamicAlert, showModal, closeModal, 
-    fillStars, getQlContent} from '/js/Util.js';
+    fillStars, getQlContent, showConfirmModal} from '/js/Util.js';
 // import 'dotenv/config';
 export function initializeRatingSystem() {
         // Handle the rating input if it exists
@@ -61,6 +61,7 @@ export function initializeCommonDOM(){
             }
         });    
     });
+    //functionality when user clicks on an image the book notes are opened
     document.querySelectorAll(".book-image").forEach(crd =>{
         crd.addEventListener('click', async ()=>{
             const id = crd.getAttribute('data-id');
@@ -77,6 +78,42 @@ export function initializeCommonDOM(){
             }
         });    
     });    
+
+    //functionality to delete a book
+    document.querySelectorAll(".del-button").forEach(btn =>{
+        btn.addEventListener('click', async(e)=>{
+            const id = btn.getAttribute('data-id');
+            showConfirmModal("Are you sure you want to delete?",
+                async()=>{
+                    const route =`/delete/${id}`;
+                    console.log(id);
+                    const response = await fetch(route, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        }
+                      });                    
+                      
+                      if (response.ok){
+                        showDynamicAlert("Deleted");
+                        window.location.reload();
+                        window.location.href="/"
+                        //alternately delete from FE
+                    }else{
+                        console.log(response)
+                        showDynamicAlert("An error occured when deleting!");   
+                        console.error("Error deleting the book", response.status);
+                    }
+                },
+                ()=>{
+                    console.log("Delete cancelled");
+                    // showDynamicAlert("Cancelled");
+                }
+            );
+        });
+    });
+
+
 }
 export function initializeEdits(books, qlEditor){
     //initialize the book editing function regardless of the view

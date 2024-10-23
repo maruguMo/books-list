@@ -39,10 +39,10 @@
                     </li>    
                 <% });%> -->
             </ul>
-            <div id="pagination-controls" class="d-flex justify-content-between mb-4">
-                <button id="prev-page" class="btn btn-sm btn-outline-success">Prev</button>
+            <div id="pagination-controls" class="d-flex justify-content-end mb-4">
+                <button id="prev-page" class="btn btn-sm btn-outline-success"><i class="fa-regular fa-square-caret-left"></i></button>
                 <span id="current-page" class="mx-2 btn-sm">page 1</span>
-                <button id="next-page" class="btn btn-sm btn-outline-success">Next</button>
+                <button id="next-page" class="btn btn-sm btn-outline-success"><i class="fa-regular fa-square-caret-right"></i></button>
             </div>            
         <%}else{%>
                 <h5 class="flex-cont">You havent added any books to your list yet</h5>    
@@ -59,7 +59,7 @@
                             <img  alt="Add a book image" class="rounded border defa-img" id="book-cover-preview">
                             <hr>
                             <div class="ctrls-flex-c btn-group mb-1 p-1">
-                                <input type="file" name="coverImage" id="coverImage" class="form-control form-control-md mb-2 btn btn-primary" accept="image/*" placeholder="choose...">
+                                <input type="file" name="coverImage" id="coverImage" class="form-control form-control-md mb-2 btn btn-primary" accept="image/*">
                             </div>
                         </div>
                     </div>
@@ -130,7 +130,7 @@
     //#region imports region
         import { createQuillEditor } from  '/js/quillSetUp.js';
         import {showDynamicAlert, showModal, closeModal, 
-                fillStars, getQlContent} from '/js/Util.js';
+                fillStars, getQlContent, formatDate, showConfirmModal} from '/js/Util.js';
         import { initializeCommonDOM, initializeRatingSystem, initializeEdits } from '/js/DOM.js';
     //#endregion    
     document.addEventListener('DOMContentLoaded', ()=> {
@@ -223,74 +223,61 @@
         renderBooks(books,currentPage);
     // Function to render books
         function renderBooks(books, page=1) {
-        const bookList = document.getElementById('book-list');
-        const totalPages = Math.ceil(books.length / booksPerPage);
-        
-        // Ensure the current page is within valid bounds
-        if (page < 1) page = 1;
-        if (page > totalPages) page = totalPages;
+            const bookList = document.getElementById('book-list');
+            const totalPages = Math.ceil(books.length / booksPerPage);
+            
+            // Ensure the current page is within valid bounds
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
 
-        // Calculate start and end indices for books to show on the current page
-        const startIndex = (page - 1) * booksPerPage;
-        const endIndex = Math.min(startIndex + booksPerPage, books.length);
+            // Calculate start and end indices for books to show on the current page
+            const startIndex = (page - 1) * booksPerPage;
+            const endIndex = Math.min(startIndex + booksPerPage, books.length);
 
-        bookList.innerHTML = ''; // Clear existing books
+            bookList.innerHTML = ''; // Clear existing books
 
-        // Display only the books for the current page
-        const booksToDisplay = books.slice(startIndex, endIndex);
-        booksToDisplay.forEach(book => {
-            const li = document.createElement('li');
-            li.classList.add('book-item');
-            li.setAttribute('data-title', book.title);
-            li.setAttribute('data-author', book.author);
-            li.setAttribute('data-rating', book.rating);
-            li.setAttribute('data-date', book.date_read);
+            // Display only the books for the current page
+            const booksToDisplay = books.slice(startIndex, endIndex);
+            booksToDisplay.forEach(book => {
+                const li = document.createElement('li');
+                li.classList.add('book-item');
+                li.setAttribute('data-title', book.title);
+                li.setAttribute('data-author', book.author);
+                li.setAttribute('data-rating', book.rating);
+                li.setAttribute('data-date', book.date_read);
 
-            li.innerHTML = `
-                <div class="book-card rounded">
-                    <img class="book-img mb-1 rounded book-image" src="${book.avatar}" alt="${book.title}" data-id="${book.id}" id="book-image">
-                    <span class="arial-ital"><strong>Title: </strong> ${book.title}</span>
-                    <span class="arial-ital"><strong>Author: </strong> ${book.author}</span>
-                    <span class="arial-ital"><strong>Language: </strong><i>${book.lang}</i></span>
-                    <hr style="margin:0;padding:0;">                    
-                    <div class="rating-container">
-                        <div class="rating">
-                            <div class="stars-outer">
-                                <div class="stars-inner" id="book-${book.id}"></div>
+                li.innerHTML = `
+                    <div class="book-card rounded">
+                        <img class="book-img mb-1 rounded book-image" src="${book.avatar}" alt="${book.title}" data-id="${book.id}" id="book-image">
+                        <span class="arial-ital"><strong>Title: </strong> ${book.title}</span>
+                        <span class="arial-ital"><strong>Author: </strong> ${book.author}</span>
+                        <span class="arial-ital"><strong>Language: </strong>${book.lang}</span>
+                        <hr style="margin:0;padding:0;">                    
+                        <div class="rating-container">
+                            <div class="rating">
+                                <div class="stars-outer">
+                                    <div class="stars-inner" id="book-${book.id}"></div>
+                                </div>
                             </div>
+                            <span class="star-rating arial-ital" data-rating="${book.rating}" data-id="${book.id}">${book.rating}/5</span>
                         </div>
-                        <span class="star-rating arial-ital" data-rating="${book.rating}" data-id="${book.id}">${book.rating}/5</span>
+                        <p><small><strong>Read Date: </strong> ${formatDate(book.date_read)}</small></p>
+                        <div class="ctrls-container gap-1">
+                            <button class="ctrls btn btn-dark btn-sm view-button" id="view-button-"${book.id} data-id="${book.id}">More...</button>
+                            <button class="ctrls btn btn-dark btn-sm edit-button" id="edit-button-"${book.id} data-id="${book.id}">Edit</button>
+                            <button class="ctrls btn btn-dark btn-sm del-button" id="del-button-"${book.id} data-id="${book.id}">Delete</button>
+                        </div>
                     </div>
-                    <p><small><strong>Read Date: </strong> ${formatDate(book.date_read)}</small></p>
-                    <div class="ctrls-container gap-1">
-                        <button class="ctrls btn btn-dark btn-sm view-button" id="view-button-"${book.id} data-id="${book.id}">More...</button>
-                        <button class="ctrls btn btn-dark btn-sm edit-button" id="edit-button-"${book.id} data-id="${book.id}">Edit</button>
-                        <button class="ctrls btn btn-dark btn-sm del-button" id="del-button-"${book.id} data-id="${book.id}">Delete</button>
-                    </div>
-                </div>
-               `;
-                
-            bookList.appendChild(li);
-        });
-            document.getElementById('current-page').innerText = `Page ${page} of ${totalPages}`;
-            initializeRatingSystem();
-            initializeCommonDOM();
-            initializeEdits(books, addQuill);        
+                `;
+                    
+                bookList.appendChild(li);
+            });
+                document.getElementById('current-page').innerText = `page ${page} of ${totalPages}`;
+                initializeRatingSystem();
+                initializeCommonDOM();
+                initializeEdits(books, addQuill);        
     }
-        function formatDate(dateString) {
-        const date = new Date(dateString);
-        // Get weekday abbreviation (e.g., 'Tue')
-        const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
-        // Get month abbreviation (e.g., 'Oct')
-        const month = date.toLocaleDateString('en-US', { month: 'short' });
-        // Get the day (e.g., '15')
-        const day = date.getDate();
-        // Get the year (e.g., '2024')
-        const year = date.getFullYear();
-        // Format the date as 'Tue, Oct-15 2024'
-        return `${weekday}, ${month}-${day} ${year}`;
-    }
-    // Sorting functions
+     // Sorting functions
         function sortBooks(property, order = 'asc') {
         const sortedBooks = books.sort((a, b) => {
             if (property === 'date_read') {
@@ -328,14 +315,14 @@
                 icon.classList.add(downClass);
                 sortOrder="desc";
                 sortBooks(sortProperty, sortOrder);
-                console.log(sortProperty, sortOrder);
+
 
             } else {
                 icon.classList.remove(downClass);
                 icon.classList.add(upClass);
                 sortOrder="asc";
                 sortBooks(sortProperty, sortOrder);
-                console.log(sortProperty, sortOrder);
+
             }
            button.style.color=activeColor;
            button.querySelector('i').style.color=activeColor;
@@ -409,6 +396,9 @@
     //#region Edit functionality
             initializeEdits(books,addQuill);
     //#endregion
+
+    //#region Delete book functionality
+
 
     });
 </script>

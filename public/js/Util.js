@@ -48,10 +48,24 @@ export function showDynamicAlert(message, targetElement) {
     alertDiv.style.minHeight=`${compHeight}px`;
 
     // Position the alert near the target element
-    const rect = targetElement.getBoundingClientRect();
-    alertDiv.style.left = `${rect.left + window.scrollX}px`;
-    alertDiv.style.top = `${rect.bottom + window.scrollY + 5}px`;
-  
+    if (targetElement){
+        const rect = targetElement.getBoundingClientRect();
+        alertDiv.style.left = `${rect.left + window.scrollX}px`;
+        alertDiv.style.top = `${rect.bottom + window.scrollY + 5}px`;
+    }else{
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        const elementWidth = alertDiv.offsetWidth;
+        const elementHeight = alertDiv.offsetHeight;
+    
+        // Calculate position for centering
+        const left = (screenWidth - elementWidth) / 2;
+        const top = (screenHeight - elementHeight) / 2;
+        
+        alertDiv.style.left = `${left}px`;
+        alertDiv.style.top = `${top}px`;
+        alertDiv.style.transform = 'translate(-50%, -50%)';
+    }  
     // Append the alert to the body
     document.body.appendChild(alertDiv);
   
@@ -81,3 +95,97 @@ export function showDynamicAlert(message, targetElement) {
   export function getQlContent(target, qlEditor){
     target.value=qlEditor.root.innerHTML;
   }
+ export function formatDate(dateString) {
+    const date = new Date(dateString);
+    // Get weekday abbreviation (e.g., 'Tue')
+    const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
+    // Get month abbreviation (e.g., 'Oct')
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    // Get the day (e.g., '15')
+    const day = date.getDate();
+    // Get the year (e.g., '2024')
+    const year = date.getFullYear();
+    // Format the date as 'Tue, Oct-15 2024'
+    return `${weekday}, ${month}-${day} ${year}`;
+}
+
+export function showConfirmModal(message, onConfirm, onCancel, doc = document) {
+    // Create the modal elements
+    const modal = document.createElement('div');
+    const modalContent = document.createElement('div');
+    const messageText = document.createElement('p');
+    const buttonsContainer = document.createElement('div');
+    const confirmButton = document.createElement('button');
+    const cancelButton = document.createElement('button');
+    const hrLine=document.createElement('hr');
+
+    // Set modal and content styles
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '9999';
+
+    // Update modal content background to red and text color to white
+    modalContent.style.backgroundColor = 'red';  // Set background color to red
+    modalContent.style.color = 'white';          // Set text color to white
+    modalContent.style.padding = '20px';
+    modalContent.style.borderRadius = '8px';
+    modalContent.style.minwidth = '30dvw';
+    modalContent.style.textAlign = 'center';
+    modalContent.style.display = 'flex';
+    modalContent.style.flexDirection = 'column';
+    modalContent.style.justifyContent = 'space-between'; // Ensure buttons stay at the bottom
+    modalContent.style.minHeight = '10dvh';  // Define the height to anchor buttons at the bottom
+    modalContent.style.Height='fit-content';
+    // Set message text
+    messageText.innerText = message;
+
+    // Set button styles and text
+    confirmButton.innerText = 'Yes';
+    confirmButton.className = 'btn btn-sm btn-dark';
+    cancelButton.innerText = 'Cancel';
+    cancelButton.className = 'btn btn-sm btn-dark';
+
+    // Style the button container to anchor buttons at the bottom and center them
+    buttonsContainer.style.display = 'flex';
+    buttonsContainer.style.justifyContent = 'space-between';  // Distribute the buttons evenly
+    buttonsContainer.style.gap = '10px';  // Space between buttons
+    buttonsContainer.style.marginTop = 'auto';  // Push buttons to the bottom
+    buttonsContainer.style.width = '100%';  // Make the buttons span full width
+
+    // Set button widths to evenly distribute
+    confirmButton.style.flex = '1';
+    cancelButton.style.flex = '1';
+
+    // Append buttons to the container
+    buttonsContainer.appendChild(confirmButton);
+    buttonsContainer.appendChild(cancelButton);
+
+    // Append all elements to the modal content
+    modalContent.appendChild(messageText);
+    modalContent.appendChild(hrLine);
+    modalContent.appendChild(buttonsContainer);
+
+    // Append modal content to modal
+    modal.appendChild(modalContent);
+
+    // Append modal to the body
+    document.body.appendChild(modal);
+
+    // Confirm button click
+    confirmButton.addEventListener('click', () => {
+        onConfirm();
+        document.body.removeChild(modal);
+    });
+
+    // Cancel button click
+    cancelButton.addEventListener('click', () => {
+        if (onCancel) onCancel();
+        document.body.removeChild(modal);
+    });}

@@ -11,8 +11,7 @@ import { constants } from 'fs';
 import multer from 'multer'
 import { body, validationResult } from 'express-validator';
 
-import { getList, shutdown, addBook, updateBook, fetchBookById,
-        fetchBookLocal, updateBookCover, updateNotes } from './database.js'
+import { getList, shutdown, addBook, updateBook, fetchBookById, getISBN, fetchBookLocal, updateBookCover, updateNotes, deleteBook } from './database.js'
 
 import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js";
 
@@ -240,8 +239,23 @@ app.post("/edit/:id", upload.single('coverImage'), async(req, res)=>{
 
 
   res.status(200).redirect("/");
-})
+});
 
+app.post("/delete/:id", async(req, res)=>{
+  try{
+    const { id }=req.params;
+    if(parseInt(id)>0 ){
+        //get isbn to delete the corresponding image
+        const isbn=getISBN(parseInt(id));
+        await deleteBook(id);
+        await deleteCover(isbn);
+        res.status(200).redirect('/');
+    }
+  } catch(error){
+      console.error('Error adding book:', error);
+      res.status(500).render('errorPage.ejs', { error, errorType: 500 });    
+  }
+});
 app.post("/edit-notes", async(req,res) =>{
   const id = parseInt(req.body.id);
   const notes=req.body.notes;
@@ -249,7 +263,23 @@ app.post("/edit-notes", async(req,res) =>{
     await updateNotes(id, notes);
   }
 });
+//delete corresponding cover
+async function deleteCover(isbn){
+  try {
+      // Construct file paths
+      const tempPath = path.join(process.env.DEFAULT_TEMP, `${isbn}.jpg`);
+      const uploadPath = path.join(process.env.DEFAULT_UPLOAD, `${isbn}.jpg`);
 
+      // Delete temp image
+      await unlink(tempPath);
+
+      // Delete uploaded image
+      await unlink(uploadPath);
+      console.log(`Successfully deleted cover images for ISBN: ${isbn}`);
+  } catch (error) {
+        console.error(`Error deleting cover images: ${error.message}`);
+  }  
+}
 // A utility function to format dates
 // A utility function to format dates to "dddd mmmm d yyyy"
 function formatDate(dateString) {

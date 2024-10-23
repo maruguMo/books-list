@@ -29,6 +29,25 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7); /* Black w/ opacity */
   }
+  .confirm-modal{
+    background-color: red;
+    border: 1px solid white;
+    color:white;
+    min-height: 10dvh;
+    min-width: 25dvw;
+    height: fit-content;
+    width: fit-content;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: add some shadow for better visual */
+    border-radius: 5px; /* Optional: add border radius */
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the modal */
+    opacity: 1;
+    font-family: 'Open Sans',Poppins, Roboto, sans-serif;
+    /* font-size:small;  */
+  }
   .mymodal-content {
     background-color: white;
     border: 1px solid #888;
@@ -392,5 +411,14 @@ p{
   .editor, .ql-toolbar, .notes-header {
     width: 100%;
     border-radius: 5px;
+  }
+  .book-img-l{
+    width: auto;
+    min-width: 20dvw;
+    max-height: 30dvh;
+    object-fit: contain;
+  }
+  .book-info{
+    font-size: small;
   }
 }
