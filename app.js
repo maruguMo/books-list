@@ -209,7 +209,7 @@ app.post("/add",
     }
 
     const { title, author, isbn, notes, rating, lang, date_read } = req.body;
-    const avatar = req.file ? `${process.env.DEFAULT_TEMP}${isbn}.jpg` : process.env.DEFAULT_COVER;
+    const avatar = req.file ? `${process.env.DEFAULT_UPLOAD}${isbn}.jpg` : process.env.DEFAULT_COVER;
     const coverUrl = req.body.imgUrl || avatar;
 
     try {
