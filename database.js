@@ -41,7 +41,7 @@ export async function addBook(title, author, isbn, notes, rating, coverUrl, lang
               [title, author, isbn, JSON.stringify(notes), rating, coverUrl, lang, date_read,avatar]
       );
   }  
-export async function updateBook(author, isbn, notes, rating, coverUrl, lang, date_read, avatar, id){
+export async function updateBook(title,author, isbn, notes, rating, coverUrl, lang, date_read, avatar, id){
     const res = await db.query(
       `   UPDATE  
               booklist  
@@ -55,7 +55,7 @@ export async function updateBook(author, isbn, notes, rating, coverUrl, lang, da
               date_read = $8 , 
               avatar =$9
           WHERE
-              id = $10 )`,
+              id = $10`,
             [title, author, isbn, JSON.stringify(notes), rating, coverUrl, lang, date_read,avatar, id]
     );
   }

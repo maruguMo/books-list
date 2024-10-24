@@ -92,7 +92,7 @@
                                         <label for="date_read" class="col-form-label fs-6">Date read</label>
                                     </div>
                                     <div class="col-auto">
-                                        <input type="date" name="date_read" id="date_read" class="form-control" required placeholder="Date read">
+                                        <input type="date" name="date_read" id="date_read" class="form-control" required>
                                     </div>
                                 </div>
                             </div>
@@ -131,85 +131,29 @@
         import { createQuillEditor } from  '/js/quillSetUp.js';
         import {showDynamicAlert, showModal, closeModal, 
                 fillStars, getQlContent, formatDate, showConfirmModal} from '/js/Util.js';
-        import { initializeCommonDOM, initializeRatingSystem, initializeEdits } from '/js/DOM.js';
+        import { initializeCommonDOM, initializeRatingSystem, initializeEdits, initializeAddNew } from '/js/DOM.js';
     //#endregion    
     document.addEventListener('DOMContentLoaded', ()=> {
-     //books object
-     const bookContainer = document.getElementById('book-container');
-     const books = JSON.parse(bookContainer.dataset.books); // Parse the books data   
-    //#region avatar upload declarations
-        const imgFileInput=document.getElementById('coverImage');
-        const coverImgPreview=document.getElementById('book-cover-preview');
-    //#endregion
-    //#region  search declarations
-        const searchLbl="Search the open-library By"
-        const searchModal=document.getElementById('search-modal');
-        const loadingWait =document.getElementById('spinner-modal');
-        const searchInput=document.getElementById('searchInput');
-        const closeSearchBtn=document.getElementById('closeSearchModal');
-        const modalContent=document.getElementById('mymodal-content');
-        const searchForm= document.getElementById('searchForm');
-    //#endregion
-    //#region :Add new book declarations
-            const addBtn=document.getElementById('add-book');
-            const addEditModal=document.getElementById('add-newBk');
-            const closeAddBtn=document.getElementById('closeAddModal');
-            const qlContainer=document.getElementById('editor');
-            const addNewForm=document.getElementById('add-new');
-            const submitBtn=document.getElementById('submit-Add');
-            const noteText=document.getElementById('add-notes');
-            const imgUrl=document.getElementById('img-Url');
+        //books object
+        const bookContainer = document.getElementById('book-container');
+        const books = JSON.parse(bookContainer.dataset.books); // Parse the books data 
+        const addBtn = document.getElementById('add-book');
 
-            const addQuill=createQuillEditor(qlContainer)
-    //#endregion
-    //#region Hide or show search button when ISBN is keyed in
-            const isbnIput=document.getElementById('isbn');
-            const searchBtn=document.getElementById('search-online');
-            isbnIput.addEventListener('input',()=>{
-                if(isbnIput.value.trim()!==""){
-                    searchBtn.style.display='block';
-                }else{
-                    searchBtn.style.display='none';
-                }
-            });
-    //#endregion
-    //#region Add book functionality
-            submitBtn.addEventListener('click',(e)=>{
-                if(addQuill.root.innerHTML===''){
-                    e.preventDefault();
-                }else{
-                    getQlContent(noteText, addQuill);
-                }
-            });
-
+        //#region  search declarations
+            const searchLbl="Search the open-library By"
+            const searchModal=document.getElementById('search-modal');
+            const loadingWait =document.getElementById('spinner-modal');
+            const searchInput=document.getElementById('searchInput');
+            const closeSearchBtn=document.getElementById('closeSearchModal');
+            const modalContent=document.getElementById('mymodal-content');
+            const searchForm= document.getElementById('searchForm');
+        //#endregion
+        //#region Add book functionality
             addBtn.addEventListener('click', ()=>{
-                let currentRating=0;
-                document.querySelector('.ModalTitleBar').innerHTML = `<div class="ModalTitleBar">Add Book! <span class="close" id="closeAddModal">&times;</span></div>`;;
-                
-                addNewForm.reset();
-
-                addQuill.setContents([]);
-
-                addNewForm.action="/add";
-
-                document.getElementById('submit-Add').innerText = "Submit";
-
-                showModal(addEditModal);
+                initializeAddNew();
             });
-
-            closeAddBtn.onclick=()=>{
-                closeModal(addEditModal);
-            }
-            addNewForm.onsubmit=(e)=>{
-                if(addQuill.root.innerHTML===''){
-                    e.preventDefault();
-                }else{
-                    console.log(addQuill.root.innerHTML);
-                    getQlContent(noteText, addQuill);
-                }
-            }
     //#endregion
-    //#region sort functionality
+        //#region sort functionality
 
         const upClass = 'fa-arrow-up-wide-short';
         const downClass = 'fa-arrow-down-wide-short';
@@ -273,9 +217,6 @@
                 bookList.appendChild(li);
             });
                 document.getElementById('current-page').innerText = `page ${page} of ${totalPages}`;
-                initializeRatingSystem();
-                initializeCommonDOM();
-                initializeEdits(books, addQuill);        
     }
      // Sorting functions
         function sortBooks(property, order = 'asc') {
@@ -338,67 +279,8 @@
         document.getElementById('prev-page').addEventListener('click', () => changePage(-1));
         document.getElementById('next-page').addEventListener('click', () => changePage(1));
     //#endregion
-
-    //#region Search functionality
-            document.querySelectorAll('.drop-downSearch').forEach(item =>{
-                item.addEventListener('click', (event)=>{
-                    event.preventDefault();
-                    // console.log('click event fired');
-                    const selectedText=item.textContent;
-                    const searchBy=item.getAttribute('data-searchby');
-
-                    document.getElementById('searchByLabel').textContent=`${searchLbl}: ${selectedText}`;
-
-                    document.getElementById('searchByHidden').value=searchBy;
-
-                    document.getElementById('searchInput').ariaPlaceholder=`Search By: ${selectedText}`;
-                    document.getElementById('searchInput').placeholder=`Search By: ${selectedText}`;
-                });
-            });
-
-            // validate search input and display the modal that is going to show the books
-            searchForm.addEventListener('submit',(event)=>{
-                const searchValue=searchInput.value.trim();
-                if(searchValue===''){
-                    event.preventDefault();
-                    // show dynamic message instead of the usual alert
-                    showDynamicAlert('Please input a search value',searchForm);
-                    return;
-                }
-                
-            });
-    //#endregion
-        
-    //#region avatar/file upload functionality
-            imgFileInput.addEventListener('input',()=>{
-                if(imgFileInput.files && imgFileInput.files.length > 0){
-                    coverImgPreview.style.backgroundImage = 'none';
-                }else{
-                    coverImgPreview.style.backgroundImage=`url('/covers/DefaultCover.png')`;
-                    coverImgPreview.src="";
-                }
-                previewImage();
-            });    
-            function previewImage() {
-                const reader = new FileReader();
-                reader.onload = function() {
-                    coverImgPreview.src = reader.result;
-                };
-                reader.readAsDataURL(event.target.files[0]);
-            }        
-    //#endregion
-
-    //#region set ratings stars region and other common DOM processing
-            initializeRatingSystem();
-            initializeCommonDOM();
-    //#endregion
-    
-    //#region Edit functionality
-            initializeEdits(books,addQuill);
-    //#endregion
-
-    //#region Delete book functionality
-
-
+        initializeCommonDOM();
+        initializeRatingSystem();
+        initializeEdits(books); 
     });
 </script>

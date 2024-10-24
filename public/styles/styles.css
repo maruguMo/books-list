@@ -294,9 +294,9 @@ p{
 }
 
 .rating-show{
-  font-family: 'Open Sans', sans-serif;
-  margin: 15px;
-  font-size: 12px;
+  font-family: 'Open Sans',arial, sans-serif;
+  margin: 12px;
+  font-size: 14px;
   /* font-style: italic; */
 }
 .stars-outer {
@@ -329,9 +329,9 @@ p{
   margin-bottom: 1px;
 } */
 .rating-label{
-  font-family: arial, 'Open Sans',  sans-serif;
-  font-size:medium;
-  font-style: italic;
+  font-family: 'Open Sans', arial, sans-serif;
+  font-size:14px;
+  /* font-style: italic; */
   margin: 5px;;
 }
 
@@ -389,7 +389,7 @@ p{
     background-size: cover;
     background-repeat: no-repeat;
     /* background-blend-mode: lighten; */
-    filter: grayscale(20%) contrast(70%);
+    /* filter: grayscale(20%) contrast(70%); */
     background-blend-mode: darken;
     image-rendering: optimizeQuality;
     height: 100%;

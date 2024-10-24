@@ -22,18 +22,6 @@ const __dirname = path.dirname(__filename);
 
 const baseUrl = process.env.BASE_URL;
 
-
-
-// Function to check if a file exists
-async function fileExists(filePath) {
-  try {
-    await access(filePath, constants.F_OK);
-    return true; // File exists
-  } catch (error) {
-    return false; // File does not exist
-  }
-}
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(express.static('js'));
@@ -122,7 +110,7 @@ app.get('/search',async(req,res)=>{
 
               // Check if the file already exists
               const exists = await fileExists(tempCoverPath); 
-
+              //download only when the user selects add this book
               if (!exists){
                 await downloadImage(imageUrl, coverFileName);
               }          
@@ -141,7 +129,7 @@ app.get('/search',async(req,res)=>{
           })
         );
     }
-    console.log(`we are here ${remRes}`)
+    // console.log(`we are here ${remRes}`)
     res.render('search.ejs',{locRes, remRes, SearchTerm: searchParams});
   }catch(error){
     console.log(error.stack);
@@ -215,14 +203,8 @@ app.post("/add",
     try {
       // Move the file from /temp to /covers after successful upload
       if (req.file) {
-        const tempPath = path.resolve('public', 'covers', 'temp', req.file.filename);
-        const finalPath = path.resolve('public', 'covers', `${isbn}.jpg`);
 
-        await rename(tempPath, finalPath);
-
-        // Optionally copy the renamed file back to temp folder for caching
-        const cachedFilePath = path.join('public', 'covers', 'temp', `${isbn}.jpg`);
-        await copyFile(finalPath, cachedFilePath);
+        if (!await saveCover(reg.file,isbn)){console.log("error saving cover");}
       }
 
       await addBook(title, author, isbn, notes, parseFloat(rating), coverUrl, lang, date_read, avatar);
@@ -230,15 +212,118 @@ app.post("/add",
       res.status(200).redirect("/");
     } catch (error) {
       console.error('Error adding book:', error);
-      res.status(500).render('errorPage.ejs', { error, errorType: 500 });
+      res.status(500).render('errorPage.ejs', { error:  errors.array().map(err => err.msg).join('\n'), errorType: 500 });
     }
   }
 );
-//edit book functionality
-app.post("/edit/:id", upload.single('coverImage'), async(req, res)=>{
+//edit book functionality: save cover
+async function saveCover(file, newISBN, id=0)
+{
+/*
+   check if the file passed is not null or undefined and start the save operations. It will also
+  implicitly delete any other cover(s) with the same isbn 
+*/
+  try{
+    if (file){
+      if (id>0){
+        const isbn= await getISBN(id);
+        if(isbn) {
+          await deleteCover(isbn);
+        }
+      }
+      //save cover and return file name
+      const tempPath = path.resolve('public', 'covers', 'temp', file.filename);
+      const finalPath = path.resolve('public', 'covers', `${newISBN}.jpg`);
 
+      await rename(tempPath, finalPath);
 
-  res.status(200).redirect("/");
+      // Optionally copy the renamed file back to temp folder for caching
+      const cachedFilePath = path.join('public', 'covers', 'temp', `${newISBN}.jpg`);
+      await copyFile(finalPath, cachedFilePath);
+      return finalPath;
+    }else{
+      return false;
+    }
+  }catch{error}{
+    console.error('Error adding book:', error, errors.array().map(err => err.msg).join('\n'));
+    return false;
+  }
+}
+//delete corresponding cover
+async function deleteCover(isbn){
+  try {
+
+    if (!isbn) {
+      throw new Error('Invalid ISBN');
+    }    
+      // Construct file paths
+   
+      const tempPath = path.join('public', 'covers', 'temp', `${isbn}.jpg`);
+      const uploadPath = path.join('public', 'covers', `${isbn}.jpg`);
+
+      console.log(tempPath, uploadPath);
+
+      // Delete temp image
+      if ( await fileExists(tempPath)){
+          await unlink(tempPath);
+      }  
+      // Delete uploaded image
+      if (await fileExists(uploadPath)){
+          await unlink(uploadPath);
+      }
+      console.log(`Successfully deleted cover images for ISBN: ${isbn}`);
+  } catch (error) {
+        console.error(`Error deleting cover images: ${error.message}`);
+  }  
+}
+// Function to check if a file exists
+async function fileExists(filePath) {
+  try {
+    await access(filePath, constants.F_OK);
+    return true; // File exists
+  } catch (error) {
+    return false; // File does not exist
+  }
+}
+
+app.post("/edit/:id", upload.single('coverImage'),  
+[
+  body('title').trim().notEmpty().withMessage('Title is required'),
+  body('author').trim().notEmpty().withMessage('Author is required'),
+  body('isbn').trim().isISBN().withMessage('Invalid ISBN'),
+  body('rating').isFloat({ min: 0, max: 5 }).withMessage('Rating must be between 0 and 5'),
+  body('lang').trim().notEmpty().withMessage('Language is required'),
+  body('date_read').isDate().withMessage('Invalid date format'),
+],async(req, res)=>{
+  //check if the user has uploaded a new book cover, if so delete the old one by retrieving the stored ISBN(Not changed)
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    // Render errorPage.ejs with validation errors
+    return res.status(400).render('errorPage.ejs', { 
+      error: {
+        name: 'ValidationError',
+        message: 'Validation failed',
+        stack: errors.array().map(err => err.msg).join('\n')
+      },
+      errorType: 400
+    });
+  }
+  const { title, author, isbn, notes, rating, lang, date_read } = req.body;
+  const avatar = req.file ? `${process.env.DEFAULT_UPLOAD}${isbn}.jpg` : req.body.avatar;
+  const coverUrl = req.body.imgUrl || avatar;
+  const id= parseInt(req.params.id);
+  try{
+    if (req.file) {
+      if (!await saveCover(req.file,isbn,id)){console.log("error saving book cover");}
+    } 
+    //update book 
+    await updateBook(title,author,isbn,notes,rating,coverUrl,lang,date_read,avatar,id);  
+    res.status(200).redirect("/");
+  }catch(error){
+    console.error('Error editing book:', error);
+    res.status(500).render('errorPage.ejs', { error:  errors.array().map(err => err.msg).join('\n'), errorType: 500 });
+  }  
+
 });
 
 app.post("/delete/:id", async(req, res)=>{
@@ -265,30 +350,7 @@ app.post("/edit-notes", async(req,res) =>{
     await updateNotes(id, notes);
   }
 });
-//delete corresponding cover
-async function deleteCover(isbn){
-  try {
 
-    if (!isbn) {
-      throw new Error('Invalid ISBN');
-    }    
-      // Construct file paths
-   
-      const tempPath = path.join('public', 'covers', 'temp', `${isbn}.jpg`);
-      const uploadPath = path.join('public', 'covers', `${isbn}.jpg`);
-
-      console.log(tempPath, uploadPath);
-
-      // Delete temp image
-      await unlink(tempPath);
-
-      // Delete uploaded image
-      await unlink(uploadPath);
-      console.log(`Successfully deleted cover images for ISBN: ${isbn}`);
-  } catch (error) {
-        console.error(`Error deleting cover images: ${error.message}`);
-  }  
-}
 // A utility function to format dates
 // A utility function to format dates to "dddd mmmm d yyyy"
 function formatDate(dateString) {
