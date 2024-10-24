@@ -1,6 +1,5 @@
 import express from "express";
 import bodyParser from "body-parser";
-
 import 'dotenv/config';
 import fs from 'fs';
 import { promisify } from 'util';
@@ -107,7 +106,7 @@ app.get('/search',async(req,res)=>{
     const books = await getList();
     const locRes= await fetchBookLocal(dbSearchParams, isISBN);
     const remBooks= await fetchBookRemote(searchParams,searchBy); //initial object to contain results from the API call
-    console.log(remBooks);
+    // console.log(remBooks);
     let remRes=null; //object to hold mapped results -(via the mpa function) - that will contain application specific field names
     // console.log(localBooks);
     if (remBooks && remBooks.docs){
@@ -142,9 +141,10 @@ app.get('/search',async(req,res)=>{
           })
         );
     }
+    console.log(`we are here ${remRes}`)
     res.render('search.ejs',{locRes, remRes, SearchTerm: searchParams});
   }catch(error){
-    // console.log(error.stack);
+    console.log(error.stack);
     res.status(500).render('errorPage.ejs', {error, errorType:500});
   }
 
@@ -246,9 +246,11 @@ app.post("/delete/:id", async(req, res)=>{
     const { id }=req.params;
     if(parseInt(id)>0 ){
         //get isbn to delete the corresponding image
-        const isbn=getISBN(parseInt(id));
+        const isbn = await getISBN(parseInt(id));
         await deleteBook(id);
-        await deleteCover(isbn);
+        if(isbn){
+          await deleteCover(isbn);
+        }
         res.status(200).redirect('/');
     }
   } catch(error){
@@ -266,9 +268,16 @@ app.post("/edit-notes", async(req,res) =>{
 //delete corresponding cover
 async function deleteCover(isbn){
   try {
+
+    if (!isbn) {
+      throw new Error('Invalid ISBN');
+    }    
       // Construct file paths
-      const tempPath = path.join(process.env.DEFAULT_TEMP, `${isbn}.jpg`);
-      const uploadPath = path.join(process.env.DEFAULT_UPLOAD, `${isbn}.jpg`);
+   
+      const tempPath = path.join('public', 'covers', 'temp', `${isbn}.jpg`);
+      const uploadPath = path.join('public', 'covers', `${isbn}.jpg`);
+
+      console.log(tempPath, uploadPath);
 
       // Delete temp image
       await unlink(tempPath);

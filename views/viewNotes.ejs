@@ -1,10 +1,10 @@
 <%- include("partials/header.ejs") %>
         <%if(book){%>
             <div class="row d-flex">
-                <div class="col-lg-3 col-md-6 col-sm-6 col-12 text-center mb-2">
+                <div class="col-lg-3 col-md-6 col-sm-6 col-12 text-center mb-2 mx-4">
                     <img src="<%=book[0].avatar%>" alt="book avatar" class="book-img-l mt-2 rounded img-fluid">
                 </div>
-                <div class="col-9 col-md-6 col-sm-6 col-12">
+                <div class="col-9 col-md-6 col-sm-6 col-12 mx-4">
                     <div class="book-info">
                         <p class="fs-4 fs-lg-3"><%= book[0].title.toUpperCase() %>- BY <%= book[0].author.toUpperCase() %> </p>
                         <p class="fs-4 fs-lg-3">ISBN: <%=book[0].isbn13%></p>

@@ -30,9 +30,9 @@
     </div>
     <hr>
     <h5>Similar books already added</h5>
-    <div id="book-container" data-books='<%= JSON.stringify(books) %>'>
-        <%if(locRes && locRes.length > 0){%>
-            <ul class="book-list px-0 py-0">
+    <%if(locRes && locRes.length > 0){%>
+        <div id="book-container" data-books='<%= JSON.stringify(locRes) %>'>            
+            <ul class="book-list">
                 <%locRes.forEach((book)=>{%>
                 <li>
                     <div class="book-card">
@@ -59,10 +59,11 @@
                 </li>
                 <%});%>
             </ul>
-        <%}else{%>
-            <p class="px-2 py-0"><i>No results from local repository</i></p>
-        <%}%> 
-    </div>
+        </div>
+    <%}else{%>
+        <p class="px-2 py-0"><i>No results from local repository</i></p>
+    <%}%> 
+
     <div class="modal" id="add-newBk">
         <div class="mymodal-content container container-lg container-md container-sm dark">
             <div class="ModalTitleBar">Add a new book <span class="close" id="closeAddModal">&times;</span></div>

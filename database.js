@@ -111,15 +111,21 @@ export async function updateBookCover(identifier, coverUrl, avatar,isISBN) {
   }
 // edit notes functionality
 export async function getISBN(id){
-    //delete the book
+    // Query to get ISBN from PostgreSQL
     const query = ` SELECT isbn13
                     FROM booklist
                     WHERE id = $1`;
-    const res = await db.query(query,[id]);
-    console.log(res.rows);
-    if (res.rows.length>0){
-        return res.rows[0].isbn13;
-    }else{
+
+    try {
+        const res = await db.query(query, [id]);
+
+        if (res.rows.length > 0 && res.rows[0].isbn13) {
+            return res.rows[0].isbn13.toString();
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error('Error querying the database:', error);
         return false;
     }
 }

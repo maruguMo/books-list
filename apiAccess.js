@@ -1,4 +1,8 @@
 import axios from "axios";
+import fs from 'fs';
+import path from "path";
+
+
 export async function downloadImage(url, fileName) {
     const imagePath = path.resolve('public','covers','temp', `${fileName}.jpg`);
     const writer = fs.createWriteStream(imagePath);
