@@ -186,7 +186,8 @@ let addQuill;
         document.getElementById('author').value = book.author;
         document.getElementById('isbn').value = book.isbn13;
         document.getElementById('lang').value = book.lang;
-
+        document.getElementById('img-Url').value = book.coverUrl;
+        document.getElementById('avatar-Url').value = book.avatar;
         //format the date properly for viewing
         const date = new Date(book.date_read);
         const day = String(date.getDate()).padStart(2, '0');   // Get day and pad to 2 digits
@@ -218,7 +219,7 @@ let addQuill;
         addNewForm.method="POST";
         // Change the button text to "Update"
         addNewForm.onsubmit=(e)=>{
-            if (qlEditor.root.innerHTML.trim()===''){
+            if (!validateQuillContent(addQuill)){
                 e.preventDefault();
             }else{
                 getQlContent(hiddenNotes,qlEditor);
@@ -232,16 +233,6 @@ let addQuill;
         closeAddBtn.onclick=()=>{
             closeModal(addEditModal);
         }
-    }
-    function getBookById(id, books, target){
-        const bk=books.find(bk => parseInt(bk.id)===parseInt(id));
-        if(bk){
-            return bk;
-        }else{
-            showDynamicAlert(`an error getting book by id ${id}`,target);
-            console.log(`an error getting book by id ${id}`);
-        }
-        
     }
 //#endregion
 
@@ -296,7 +287,7 @@ let addQuill;
             closeModal(addEditModal);
         }
         addNewForm.onsubmit=(e)=>{
-            if(addQuill.root.innerHTML===''){
+            if(!validateQuillContent(addQuill)){
                 e.preventDefault();
             }else{
                 console.log(addQuill.root.innerHTML);
@@ -347,5 +338,27 @@ let addQuill;
             };
             reader.readAsDataURL(event.target.files[0]);
         }  
+    }
+    function getBookById(id, books, target){
+        const bk=books.find(bk => parseInt(bk.id)===parseInt(id));
+        if(bk){
+            return bk;
+        }else{
+            showDynamicAlert(`an error getting book by id ${id}`,target);
+            console.log(`an error getting book by id ${id}`);
+        }
+        
+    }
+    function validateQuillContent(qlEditor){
+
+        console.log("validating ql");
+        const content = qlEditor.getText().trim();
+        
+        if(content.length === 0){
+            showDynamicAlert("Please add notes", qlEditor);
+            return false;
+        }
+
+        return true;
     }
 //#endregion

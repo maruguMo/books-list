@@ -124,7 +124,8 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
                 title: doc.title || 'untitled',
                 lang: doc.language ? doc.language[0] : 'Unknown',
                 isbn13: doc.isbn && doc.isbn.length > 0 ? doc.isbn[0] : 'No ISBN',
-                publish:doc.publish_date ? doc.publish_date[0] : "Unknown"
+                publish:doc.publish_date ? doc.publish_date[0] : "Unknown",
+                cover_url:imageUrl?imageUrl:null
               };
             })
           );
@@ -204,7 +205,7 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
         // Move the file from /temp to /covers after successful upload
         if (req.file) {
 
-          if (!await saveCover(reg.file,isbn)){console.log("error saving cover");}
+          if (!await saveCover(req.file,isbn)){console.log("error saving cover");}
         }
 
         await addBook(title, author, isbn, notes, parseFloat(rating), coverUrl, lang, date_read, avatar);
@@ -309,7 +310,15 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
       });
     }
     const { title, author, isbn, notes, rating, lang, date_read } = req.body;
-    const avatar = req.file ? `${process.env.DEFAULT_UPLOAD}${isbn}.jpg` : req.body.avatar;
+    // This line determines the avatar (book cover image) for the book being edited
+    // It checks three possible sources for the image in order of priority:
+    // 1. A newly uploaded file (req.file)
+    // 2. An existing image URL from the form (req.body.imgUrl)
+    // 3. The default cover image
+    // The paths are stored in environment variables for easy configuration
+    const avatar = req.file 
+        ? `${process.env.DEFAULT_UPLOAD}${isbn}.jpg` 
+        : (req.body.imgUrl || `${process.env.DEFAULT_COVER}`);
     const coverUrl = req.body.imgUrl || avatar;
     const id= parseInt(req.params.id);
     try{

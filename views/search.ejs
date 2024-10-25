@@ -5,8 +5,9 @@
     <h5>Search results from the open library</h5>
     <div id="openLibResults px-0 py-0">
         <%if( remRes && remRes.length >0){%>
-            <ul class="book-list">
-                <%remRes.forEach((book, idx)=>{%>
+            <div class="book-cont-rem" data-remBooks='<%= JSON.stringify(remRes) %>'>
+                <ul class="book-list">
+                    <%remRes.forEach((book, idx)=>{%>
                     <li>
                         <div class="book-card">
                             <img class="mb-1 book-img rounded" src="<%=book.avatar%>" alt="<%=book.Title%>">
@@ -18,12 +19,13 @@
                                 <p><strong>Published: </strong><%=book.publish%></p>
                             </div>
                             <div class="add-item">
-                                <button class="ctrls  btn btn-dark" data-id="<%=idx%>">Add this book!</button>
+                                <button class="ctrls btn btn-dark btn-sm add-button" data-id="<%=idx%>">Add this book!</button>
                             </div>
                         </div>
                     </li>
-                <%});%>
-            </ul>
+                    <%});%>
+                </ul>
+            </div>
         <%}else{ %>
             <p class="px-2 py-0"><i>No results available from the open library</i></p>
         <%}%>
@@ -133,6 +135,7 @@
                     <div class="col-12 col-sm-12 col-md-12 d-flex justify-content-center p-2 flex-ctrls">
                         <input type="hidden" name="notes" id="add-notes">
                         <input type="hidden" name="imgUrl" id="img-Url">
+                        <input type="hidden" name="avatar" id="avatar-Url">
                         <button class="btn btn-secondary mb-1 ms-2 flex-fill" id="reset-add" type="reset">Reset</button>
                         <button class="btn btn-primary mb-1 ms-2 flex-fill" id="submit-Add" type="submit">Submit</button>
                     </div>

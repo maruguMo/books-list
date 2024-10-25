@@ -118,6 +118,7 @@
                     <div class="col-12 col-sm-12 col-md-12 d-flex justify-content-center p-2 flex-ctrls">
                         <input type="hidden" name="notes" id="add-notes">
                         <input type="hidden" name="imgUrl" id="img-Url">
+                        <input type="hidden" name="avatar" id="avatar-Url">
                         <button class="btn btn-secondary mb-1 ms-2 flex-fill" id="reset-add" type="reset">Reset</button>
                         <button class="btn btn-primary mb-1 ms-2 flex-fill" id="submit-Add" type="submit">Submit</button>
                     </div>
@@ -217,6 +218,7 @@
                 bookList.appendChild(li);
             });
                 document.getElementById('current-page').innerText = `page ${page} of ${totalPages}`;
+                initializeRatingSystem();
     }
      // Sorting functions
         function sortBooks(property, order = 'asc') {
