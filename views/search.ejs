@@ -1,25 +1,26 @@
 <%- include("partials/header.ejs") %>
- 
-    <span style="text-align: center;" class="ModalTitleBar mt-2">Search results for: &nbsp;</span><span class="ModalTitleBar"><i>"<%= SearchTerm%>"</i></span>
+    <div class="container modal-title-normal rounded">
+        <span style="text-align: center;" class="text-light mt-2 fw-medium fs-6">Search results for:&nbsp;</span><span class="fw-normal text-light fs-6">"<%= SearchTerm%>"</span>
+    </div>
     <hr>
     <h5>Search results from the open library</h5>
     <div id="openLibResults px-0 py-0">
-        <%if( remRes && remRes.length >0){%>
-            <div class="book-cont-rem" data-remBooks='<%= JSON.stringify(remRes) %>'>
+        <%if(remRes && remRes.length >0){%>
+            <div class ="book-cont-rem" id="book-cont-rem" data-rembooks='<%=JSON.stringify(remRes) %>'>
                 <ul class="book-list">
                     <%remRes.forEach((book, idx)=>{%>
                     <li>
                         <div class="book-card">
                             <img class="mb-1 book-img rounded" src="<%=book.avatar%>" alt="<%=book.Title%>">
                             <div class="book-dets">
-                                <p><strong>Title: </strong><%=book.title%></p>
-                                <p><strong>Author: </strong><%=book.author%></p>
-                                <p><strong>ISBN: </strong><%=book.isbn13%></p>
-                                <p><strong>Language: </strong><%=book.lang%></p>
-                                <p><strong>Published: </strong><%=book.publish%></p>
+                                <p data-title="<%=book.title%>"><strong>Title: </strong><%=book.title%></p>
+                                <p data-author="<%=book.author%>"><strong>Author: </strong><%=book.author%></p>
+                                <p data-isbn="<%=book.isbn13%>"><strong>ISBN: </strong><%=book.isbn13%></p>
+                                <p data-lang="<%=book.lang%>"><strong>Language: </strong><%=book.lang%></p>
+                                <p data-publish="<%=book.publish%>"><strong>Published: </strong><%=book.publish%></p>
                             </div>
                             <div class="add-item">
-                                <button class="ctrls btn btn-dark btn-sm add-button" data-id="<%=idx%>">Add this book!</button>
+                                <button class="ctrls btn btn-dark btn-sm add-button" id="add-button-<%=idx%>" data-id="<%=idx%>">Add this book!</button>
                             </div>
                         </div>
                     </li>
@@ -68,7 +69,7 @@
 
     <div class="modal" id="add-newBk">
         <div class="mymodal-content container container-lg container-md container-sm dark">
-            <div class="ModalTitleBar">Add a new book <span class="close" id="closeAddModal">&times;</span></div>
+            <div class="ModalTitleBar" id="add-new-title">Add a new book <span class="close" id="closeAddModal">&times;</span></div>
             <form action="/add"  id="add-new" method="POST" enctype="multipart/form-data">
                 <div class="row">
                     <div class="col-lg-3 mt-2 col-sm-12 col-md-12">
@@ -127,7 +128,7 @@
                     </div>
                 </div>
                     <div class="editor-container mb-3">
-                        <p class="notes-header ModalTitleBar rounded" >My notes about this book</p>
+                        <p class="notes-header modal-title-normal rounded" >My notes about this book</p>
                         <div  id="editor" class="editor "> </div>
                         <input type ="hidden" name="notes" id="add-notes" />
                     </div>
@@ -148,11 +149,14 @@
         import { createQuillEditor } from  '/js/quillSetUp.js';
         import { showDynamicAlert, showModal, closeModal, 
                 getQlContent} from '/js/Util.js';
-        import {initializeRatingSystem, initializeCommonDOM } from '/js/DOM.js';
+        import {initializeRatingSystem, initializeCommonDOM, initializeRemoteBooks } from '/js/DOM.js';
 
-        document.addEventListener('DOMContentLoaded', ()=>{
+        document.addEventListener('DOMContentLoaded', async ()=>{
+            const remContainer=document.getElementById('book-cont-rem');
+            const remoteBooks= JSON.parse(remContainer.dataset.rembooks);
             initializeRatingSystem();
             initializeCommonDOM();
+            initializeRemoteBooks(remoteBooks);
         });
     </script>
 <%- include("partials/footer.ejs") %>

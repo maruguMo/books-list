@@ -2,7 +2,7 @@
 .ModalTitleBar{
     position: sticky;
     top: 0; /* Sticks the title bar to the top */
-    background-color: #010127;
+    background-color:#00005A;
     color: white;
     text-align: center;
     font-size: large;
@@ -10,6 +10,15 @@
     padding: 0;
     text-align: center;
     z-index: 1101;
+}
+.modal-title-normal{
+  background-color:#00005A;
+  color: white;
+  text-align: center;
+  font-size: large;
+  margin: 0;
+  padding: 0;
+  text-align: center;
 }
 .sticky-nav{
   position: sticky;

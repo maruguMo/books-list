@@ -156,9 +156,62 @@ let addQuill;
         //#endregion
     }
 //#endregion
+//#region populate add form
+function populateAddForm(book, addNewForm, isAddRemote=false){
+    addNewForm.title.value = book.title;
+    addNewForm.author.value = book.author;
+    addNewForm.isbn.value = book.isbn13;
+    addNewForm.lang.value = book.lang;
+    addNewForm.imgUrl.value = book.cover_url;
+    addNewForm.avatar.value = book.avatar;
 
+    console.log(book.avatar);
+    console.log(book.cover_url);
+
+    const bookAvatar=document.getElementById('book-cover-preview');
+    bookAvatar.style.backgroundImage='none';
+    bookAvatar.style.filter='none';
+    bookAvatar.src = book.avatar || '/covers/default-cover.png';
+    
+    addNewForm.method="POST";
+
+    if(isAddRemote){
+        addNewForm.action="/add";
+    }else{
+        const ratingDiv=document.getElementById('rating-add');
+        const starsInnerId=document.getElementById('rating-add-inner');
+
+        addNewForm.action = `/edit/${book.id}`;
+        document.getElementById('submit-Add').innerText = "Update";
+
+        addNewForm.rating.value=book.rating;
+        document.getElementById('rating-disp').innerText=parseFloat(book.rating).toFixed(1);            
+        ratingDiv.setAttribute('data-rating',book.rating);
+        fillStars(book.rating,starsInnerId);            
+        //format the date properly for viewing  
+        addNewForm.date_read.value=formatDate(book.date_read);
+    }
+}
+//#endregion
+//#region initialize remote books
+    export function initializeRemoteBooks(remBooks){
+        document.querySelectorAll('.add-button').forEach(btn =>{
+            btn.addEventListener('click', async (e)=>{
+                e.preventDefault();
+                const id = btn.getAttribute('data-id');
+                const book = remBooks[id];
+                console.log(id);
+                if(book){
+                    initializeAddNew(book);
+                }else{
+                    showDynamicAlert(`an error getting book by id ${id}`,btn);
+                    console.log(`an error getting book by id ${id}`);
+                }   
+            });
+        });
+    }
+//#endregion
 //#region initialize edits
-
     export function initializeEdits(books){
         //initialize the book editing function regardless of the view
         //assume there is a common edit modal on both views
@@ -175,49 +228,18 @@ let addQuill;
     }
     function openEditModal(book, qlEditor) {
         // Set the modal title
-        document.querySelector('.ModalTitleBar').innerHTML = `<div class="ModalTitleBar">Edit Book <span class="close" id="closeAddModal">&times;</span></div>`;
+        document.getElementById('add-new-title').innerHTML = `<div class="ModalTitleBar">Edit Book <span class="close" id="closeAddModal">&times;</span></div>`;
         const closeAddBtn=document.getElementById('closeAddModal');
         const addNewForm=document.getElementById('add-new');
         const addEditModal=document.getElementById('add-newBk');
         const hiddenNotes = document.getElementById('add-notes')
-        const starsInnerId=document.getElementById('rating-add-inner');
-        // Populate the form fields with book data
-        document.getElementById('title').value = book.title;
-        document.getElementById('author').value = book.author;
-        document.getElementById('isbn').value = book.isbn13;
-        document.getElementById('lang').value = book.lang;
-        document.getElementById('img-Url').value = book.coverUrl;
-        document.getElementById('avatar-Url').value = book.avatar;
-        //format the date properly for viewing
-        const date = new Date(book.date_read);
-        const day = String(date.getDate()).padStart(2, '0');   // Get day and pad to 2 digits
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Get month and pad to 2 digits (Months are 0-indexed)
-        const year = date.getFullYear();  // Get year
-        const formattedDate = `${year}-${month}-${day}`; 
-
-        document.getElementById('date_read').value = formattedDate;
-
-        // console.log(book.date_read);
-        console.log(formattedDate);
-        const ratingDiv=document.getElementById('rating-add');
-        ratingDiv.setAttribute('data-rating',book.rating);
-        fillStars(book.rating,starsInnerId);
-        document.getElementById('rating').value = book.rating;
-        document.getElementById('rating-disp').innerText=book.rating;
-
+   
         // If there are book notes
         isValidJSONString(book.notes)? qlEditor.root.innerHTML=JSON.parse(book.notes) : qlEditor.root.innerHTML=book.notes;
         hiddenNotes.value =qlEditor.root.innerHTML;
-        // Set the book cover
-        const bookAvatar=document.getElementById('book-cover-preview');
-        bookAvatar.style.backgroundImage='none';
-        bookAvatar.style.filter='none';
-        bookAvatar.src = book.avatar || '/covers/default-cover.png';
-        
-        // Update form action to 'edit'
-        addNewForm.action = `/edit/${book.id}`;
-        addNewForm.method="POST";
-        // Change the button text to "Update"
+
+        populateAddForm(book, addNewForm, false);
+
         addNewForm.onsubmit=(e)=>{
             if (!validateQuillContent(addQuill)){
                 e.preventDefault();
@@ -226,8 +248,7 @@ let addQuill;
                 console.log(hiddenNotes.value);
             }
         }
-        document.getElementById('submit-Add').innerText = "Update";
-
+  
         // Show the modal
         showModal(addEditModal);
         closeAddBtn.onclick=()=>{
@@ -238,34 +259,37 @@ let addQuill;
 
 //#region add new book functionality
     export function initializeAddNew(remBook=null){
+          
         const addEditModal=document.getElementById('add-newBk');
-        
         const addNewForm=document.getElementById('add-new');
         const submitBtn=document.getElementById('submit-Add');
         const noteText=document.getElementById('add-notes');
-        const imgUrl = document.getElementById('img-Url');
+        let currentRating=0;
+        document.getElementById('submit-Add').innerText = "Submit";
+        
+        if (remBook){
+            populateAddForm(remBook, addNewForm, true);
+            //set the modal title
+            document.getElementById('add-new-title').innerHTML = `<div class="ModalTitleBar">Add this book! <span class="close" id="closeAddModal">&times;</span></div>`;
+        }else{
+            //set the modal title
+            document.getElementById('add-new-title').innerHTML = `<div class="ModalTitleBar">Add a book! <span class="close" id="closeAddModal">&times;</span></div>`;
+            initializeAvatar();
+            //reset image
+            const bookAvatar=document.getElementById('book-cover-preview');
+            bookAvatar.style.backgroundImage = `url('/covers/DefaultCover.png')`;
+            bookAvatar.style.backgroundPosition='center';
+            bookAvatar.style.backgroundRepeat='no-repeat';
+            bookAvatar.style.backgroundSize='cover';
+            bookAvatar.src='';
+            const ratingDiv=document.getElementById('rating-add');
+            ratingDiv.setAttribute('data-rating',0);
+            addNewForm.reset();            
+        }
 
         showHideISBNButton();
-        initializeAvatar();
-
-        let currentRating=0;
-        document.querySelector('.ModalTitleBar').innerHTML = `<div class="ModalTitleBar">Add a book! <span class="close" id="closeAddModal">&times;</span></div>`;
-        //reset image
-        const bookAvatar=document.getElementById('book-cover-preview');
-        bookAvatar.style.backgroundImage = `url('/covers/DefaultCover.png')`;
-        bookAvatar.style.backgroundPosition='center';
-        bookAvatar.style.backgroundRepeat='no-repeat';
-        bookAvatar.style.backgroundSize='cover';
-        bookAvatar.src='';
-        const ratingDiv=document.getElementById('rating-add');
-        ratingDiv.setAttribute('data-rating',0);
-        addNewForm.reset();
 
         addQuill.setContents([]);
-
-        addNewForm.action="/add";
-
-        document.getElementById('submit-Add').innerText = "Submit";
 
         showModal(addEditModal);
 
@@ -298,9 +322,17 @@ let addQuill;
 //#endregion
 
 //#region  Helper functions
+    function formatDate(dateStr){
+        const date = new Date(dateStr)
+        const day = String(date.getDate()).padStart(2, '0');   // Get day and pad to 2 digits
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Get month and pad to 2 digits (Months are 0-indexed)
+        const year = date.getFullYear();  // Get year
+        return `${year}-${month}-${day}`;
+    }
     async function fetchRoute(str){
         return await fetch(str);
-    }function isValidJSONString(string){
+    }
+    function isValidJSONString(string){
         try{
         JSON.parse(string);
         }catch(e){

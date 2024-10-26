@@ -91,7 +91,6 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
     const dbSearchParams=`%${req.query.search}%`;
 
     try{
-      const books = await getList();
       const locRes= await fetchBookLocal(dbSearchParams, isISBN);
       const remBooks= await fetchBookRemote(searchParams,searchBy); //initial object to contain results from the API call
       // console.log(remBooks);
@@ -102,10 +101,13 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
               remBooks.docs.map(async doc => {
               const coverId = doc.cover_i ? doc.cover_i : null;
               let localCoverPath = process.env.DEFAULT_COVER; // Default cover if none
+              let imageUrl=null;
               // Only download the cover if cover_id exists
               if (coverId) {
                 const coverFileName = `${coverId}`; // Use cover_id as the filename
-                const imageUrl = `${process.env.COVERS_BASE}${coverId}-M.jpg`;
+                imageUrl = `${process.env.COVERS_BASE}${coverId}-M.jpg`;
+                console.log(imageUrl);
+
                 const tempCoverPath = path.resolve(process.env.DEFAULT_TEMP, `${coverFileName}.jpg`);
 
                 // Check if the file already exists
@@ -197,15 +199,54 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
         });
       }
 
-      const { title, author, isbn, notes, rating, lang, date_read } = req.body;
-      const avatar = req.file ? `${process.env.DEFAULT_UPLOAD}${isbn}.jpg` : process.env.DEFAULT_COVER;
+      const { title, author, isbn, notes, rating, lang, date_read,avatar } = req.body;
+      if(avatar.trim()===''){
+        avatar = req.file ? `${process.env.DEFAULT_UPLOAD}${isbn}-${path.basename(req.file.path)}` : process.env.DEFAULT_COVER;
+      }
+      console.log(avatar);
       const coverUrl = req.body.imgUrl || avatar;
-
+      console.log(coverUrl);
       try {
-        // Move the file from /temp to /covers after successful upload
-        if (req.file) {
+            // The following lines determines the avatar (book cover image) for the book being added
+          // They check three possible sources for the image in order of priority:
+          // 1. A newly uploaded file (req.file)
+          // 2. An existing image URL from the form (req.body.avatar)
+          // 3. The default cover image
+          // The folder paths are stored in environment variables for easy configuration
+          // Move the file from /temp to /covers after successful upload
 
-          if (!await saveCover(req.file,isbn)){console.log("error saving cover");}
+        let finalPath;
+
+        if (req.file) {
+          finalPath=await saveCover(req.file,isbn);
+          if (!finalPath){
+            console.log("error saving cover");
+            return res.status(500).render('errorPage.ejs', { 
+              error: {
+                name: 'Internal server error',
+                message: 'File Operation error or other error: Saving cover failed',
+              },
+              errorType: 500
+            });
+          }else{
+            avatar=finalPath;
+          }
+        }else{
+          if (avatar !== process.env.DEFAULT_COVER) {
+            finalPath=await saveCover(avatar,isbn);
+            if (!finalPath){
+                console.log("error saving book cover");
+                return res.status(500).render('errorPage.ejs', { 
+                  error: {
+                    name: 'Internal server error',
+                    message: 'File Operation error or other error: Saving cover failed',
+                  },
+                  errorType: 500
+                });
+              } else{
+                avatar=finalPath;
+              }
+          }
         }
 
         await addBook(title, author, isbn, notes, parseFloat(rating), coverUrl, lang, date_read, avatar);
@@ -225,54 +266,57 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
     implicitly delete any other cover(s) with the same isbn 
   */
     try{
-      if (file){
-        if (id>0){
-          const isbn= await getISBN(id);
-          if(isbn) {
-            await deleteCover(isbn);
-          }
+      let tempPath;
+      //check if the file is a string or an object
+      if (typeof file === 'string') {
+        // If `file` is a string, use it directly as the path
+        tempPath = path.resolve(file);
+      } else if (file && file.path) {
+        // If `file` is an object (from upload), use its `path` property
+        tempPath = path.resolve(file.path);
+      } else {
+        // If `file` is null or invalid, return false
+        return false;
+      }
+      if (id>0){
+        //get file name from the db
+        const fileName = await getSavedFileName(id);
+        //delete existing cover from the upload folder
+        if(fileName.avatar){
+          await deleteCover(fileNames.avatar);
         }
+      }
         //save cover and return file name
-        const tempPath = path.resolve('public', 'covers', 'temp', file.filename);
-        const finalPath = path.resolve('public', 'covers', `${newISBN}.jpg`);
+        const finalPath = path.resolve('public', process.env.DEFAULT_UPLOAD, `${newISBN}-${path.basename(tempPath)}`);
 
         await rename(tempPath, finalPath);
 
         // Optionally copy the renamed file back to temp folder for caching
-        const cachedFilePath = path.join('public', 'covers', 'temp', `${newISBN}.jpg`);
+        const cachedFilePath = path.resolve('public', process.env.DEFAULT_TEMP, `${newISBN}-${path.basename(tempPath)}.jpg`);
         await copyFile(finalPath, cachedFilePath);
-        return finalPath;
-      }else{
-        return false;
-      }
+        return path.join('public', process.env.DEFAULT_UPLOAD, `${newISBN}-${path.basename(tempPath)}`);;
+
     }catch{error}{
-      console.error('Error adding book:', error, errors.array().map(err => err.msg).join('\n'));
+      console.error('Error saving book cover:', error, errors.array().map(err => err.msg).join('\n'));
       return false;
     }
   }
 //delete corresponding cover
-  async function deleteCover(isbn){
+  async function deleteCover(fileName){
     try {
 
-      if (!isbn) {
-        throw new Error('Invalid ISBN');
+      if (!fileName) {
+        throw new Error('Invalid filename');
       }    
-        // Construct file paths
     
-        const tempPath = path.join('public', 'covers', 'temp', `${isbn}.jpg`);
-        const uploadPath = path.join('public', 'covers', `${isbn}.jpg`);
+        const delFilePath = path.resolve(fileName);
 
-        console.log(tempPath, uploadPath);
 
         // Delete temp image
-        if ( await fileExists(tempPath)){
-            await unlink(tempPath);
+        if (await fileExists(delFilePath)){
+            await unlink(delFilePath);
         }  
-        // Delete uploaded image
-        if (await fileExists(uploadPath)){
-            await unlink(uploadPath);
-        }
-        console.log(`Successfully deleted cover images for ISBN: ${isbn}`);
+        console.log(`Successfully deleted cover image: ${fileName}`);
     } catch (error) {
           console.error(`Error deleting cover images: ${error.message}`);
     }  
@@ -309,22 +353,32 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
         errorType: 400
       });
     }
-    const { title, author, isbn, notes, rating, lang, date_read } = req.body;
+    const { title, author, isbn, notes, rating, lang, date_read, avatar } = req.body;
     // This line determines the avatar (book cover image) for the book being edited
     // It checks three possible sources for the image in order of priority:
     // 1. A newly uploaded file (req.file)
     // 2. An existing image URL from the form (req.body.imgUrl)
     // 3. The default cover image
     // The paths are stored in environment variables for easy configuration
-    const avatar = req.file 
-        ? `${process.env.DEFAULT_UPLOAD}${isbn}.jpg` 
-        : (req.body.imgUrl || `${process.env.DEFAULT_COVER}`);
+
     const coverUrl = req.body.imgUrl || avatar;
     const id= parseInt(req.params.id);
     try{
       if (req.file) {
-        if (!await saveCover(req.file,isbn,id)){console.log("error saving book cover");}
-      } 
+        const finalPath=await saveCover(req.file,isbn,id);
+        if (!finalPath){
+          console.log("error saving book cover");
+          return res.status(500).render('errorPage.ejs', { 
+            error: {
+              name: 'Internal server error',
+              message: 'File Operation error or other error: Saving cover failed',
+            },
+            errorType: 500
+          });
+        }else{
+          avatar=finalPath;
+        }
+      }
       //update book 
       await updateBook(title,author,isbn,notes,rating,coverUrl,lang,date_read,avatar,id);  
       res.status(200).redirect("/");

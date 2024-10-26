@@ -109,7 +109,16 @@ export async function updateBookCover(identifier, coverUrl, avatar,isISBN) {
       console.error('Error updating the database:', error.message);
     }
   }
-// edit notes functionality
+export async function getSavedFileName(id){
+  const query = ` SELECT 
+                  avatar
+                  FROM booklist
+                  WHERE id = $1`;
+  const res = await db.query(query, [id]);
+  return res.rows[0].avatar;
+}
+
+//get ISBN from PostgreSQL
 export async function getISBN(id){
     // Query to get ISBN from PostgreSQL
     const query = ` SELECT isbn13

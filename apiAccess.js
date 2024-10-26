@@ -16,10 +16,17 @@ export async function downloadImage(url, fileName) {
   
       response.data.pipe(writer);
   
-      writer.on('finish', () => console.log(`Saved: ${imagePath}`));
-      writer.on('error', (err) => console.error('Error writing image:', err));
+      writer.on('finish', () => {
+        //console.log(`Saved: ${imagePath}`)
+        return true;
+      });
+      writer.on('error', (err) => {
+        //console.error('Error writing image:', err);
+        return false;
+      });
     } catch (error) {
       console.error('Error downloading image:', error.message);
+      return false;
     }
   }
 

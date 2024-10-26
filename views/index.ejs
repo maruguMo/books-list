@@ -51,7 +51,7 @@
 
     <div class="modal" id="add-newBk">
         <div class="mymodal-content container container-lg container-md container-sm dark">
-            <div class="ModalTitleBar">Add a new book <span class="close" id="closeAddModal">&times;</span></div>
+            <div class="ModalTitleBar"  id="add-new-title"> Add a new book <span class="close" id="closeAddModal">&times;</span></div>
             <form action="/add"  id="add-new" method="POST" enctype="multipart/form-data">
                 <div class="row">
                     <div class="col-lg-3 mt-2 col-sm-12 col-md-12">
@@ -110,7 +110,7 @@
                     </div>
                 </div>
                     <div class="editor-container mb-3">
-                        <p class="notes-header ModalTitleBar rounded" >My notes about this book</p>
+                        <p class="notes-header modal-title-normal rounded" >My notes about this book</p>
                         <div  id="editor" class="editor "> </div>
                         <input type ="hidden" name="notes" id="add-notes" />
                     </div>
@@ -208,9 +208,9 @@
                         </div>
                         <p><small><strong>Read Date: </strong> ${formatDate(book.date_read)}</small></p>
                         <div class="ctrls-container gap-1">
-                            <button class="ctrls btn btn-dark btn-sm view-button" id="view-button-"${book.id} data-id="${book.id}">More...</button>
-                            <button class="ctrls btn btn-dark btn-sm edit-button" id="edit-button-"${book.id} data-id="${book.id}">Edit</button>
-                            <button class="ctrls btn btn-dark btn-sm del-button" id="del-button-"${book.id} data-id="${book.id}">Delete</button>
+                            <button class="ctrls btn btn-dark btn-sm view-button" id="view-button-${book.id}" data-id="${book.id}">More...</button>
+                            <button class="ctrls btn btn-dark btn-sm edit-button" id="edit-button-${book.id}" data-id="${book.id}">Edit</button>
+                            <button class="ctrls btn btn-dark btn-sm del-button" id="del-button-${book.id}" data-id="${book.id}">Delete</button>
                         </div>
                     </div>
                 `;
