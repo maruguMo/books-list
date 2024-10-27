@@ -219,6 +219,8 @@
             });
                 document.getElementById('current-page').innerText = `page ${page} of ${totalPages}`;
                 initializeRatingSystem();
+                initializeCommonDOM();
+                initializeEdits(books); 
     }
      // Sorting functions
         function sortBooks(property, order = 'asc') {

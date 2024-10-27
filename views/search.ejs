@@ -9,21 +9,23 @@
             <div class ="book-cont-rem" id="book-cont-rem" data-rembooks='<%=JSON.stringify(remRes) %>'>
                 <ul class="book-list">
                     <%remRes.forEach((book, idx)=>{%>
-                    <li>
-                        <div class="book-card">
-                            <img class="mb-1 book-img rounded" src="<%=book.avatar%>" alt="<%=book.Title%>">
-                            <div class="book-dets">
-                                <p data-title="<%=book.title%>"><strong>Title: </strong><%=book.title%></p>
-                                <p data-author="<%=book.author%>"><strong>Author: </strong><%=book.author%></p>
-                                <p data-isbn="<%=book.isbn13%>"><strong>ISBN: </strong><%=book.isbn13%></p>
-                                <p data-lang="<%=book.lang%>"><strong>Language: </strong><%=book.lang%></p>
-                                <p data-publish="<%=book.publish%>"><strong>Published: </strong><%=book.publish%></p>
-                            </div>
-                            <div class="add-item">
-                                <button class="ctrls btn btn-dark btn-sm add-button" id="add-button-<%=idx%>" data-id="<%=idx%>">Add this book!</button>
-                            </div>
-                        </div>
-                    </li>
+                        <% if(book.avatar){ %>
+                            <li>
+                                <div class="book-card">
+                                    <img class="mb-1 book-img rounded" src="<%=book.avatar%>" alt="<%=book.Title%>">
+                                    <div class="book-dets">
+                                        <p data-title="<%=book.title%>"><strong>Title: </strong><%=book.title%></p>
+                                        <p data-author="<%=book.author%>"><strong>Author: </strong><%=book.author%></p>
+                                        <p data-isbn="<%=book.isbn13%>"><strong>ISBN: </strong><%=book.isbn13%></p>
+                                        <p data-lang="<%=book.lang%>"><strong>Language: </strong><%=book.lang%></p>
+                                        <p data-publish="<%=book.publish%>"><strong>Published: </strong><%=book.publish%></p>
+                                    </div>
+                                    <div class="add-item">
+                                        <button class="ctrls btn btn-dark btn-sm add-button" id="add-button-<%=idx%>" data-id="<%=idx%>">Add this book!</button>
+                                    </div>
+                                </div>
+                            </li>
+                        <% } %>
                     <%});%>
                 </ul>
             </div>

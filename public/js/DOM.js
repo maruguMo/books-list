@@ -57,19 +57,22 @@ let addQuill;
         //#region View notes functionality
             document.querySelectorAll(".view-button").forEach(btn =>{
                 btn.addEventListener('click', async ()=>{
-                    const id = btn.getAttribute('data-id');
+                    const id = parseInt(btn.getAttribute('data-id'));
                     if (id){
-                    const route=`/view-notes/${id}`;
-                    console.log(route)
-                    const resp = await fetchRoute(route);
-                    console.log(resp);
+                        const route=`/view-notes/${id}`;
+                        console.log(route)
+                        const resp = await fetchRoute(route);
+                        console.log(resp);
                     
-                    if(resp.ok){
-                            window.location.href = route;
+                        if(resp.ok){
+                                window.location.href = route;
+                        }else{
+                            console.error("Error fetching notes:", resp.status);
+                        }
                     }else{
-                        console.error("Error fetching notes:", resp.status);
+                        console.log('no id')
                     }
-                    }
+
                 });    
             });
             //functionality when user clicks on an image the book notes are opened
