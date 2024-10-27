@@ -13,6 +13,7 @@ import { body, validationResult } from 'express-validator';
 import { getList, shutdown, addBook, updateBook, fetchBookById, getISBN, fetchBookLocal, updateBookCover, updateNotes, deleteBook } from './database.js'
 
 import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js";
+import clearTempFolder from './fileOp.js';
 
   const app = express();
   const PORT = process.env.APP_PORT;
@@ -91,6 +92,8 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
     const dbSearchParams=`%${req.query.search}%`;
 
     try{
+      //clear the temp folder before each search
+      await clearTempFolder();
       const locRes= await fetchBookLocal(dbSearchParams, isISBN);
       const remBooks= await fetchBookRemote(searchParams,searchBy); //initial object to contain results from the API call
       // console.log(remBooks);
@@ -198,14 +201,13 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
           errorType: 400
         });
       }
-
+      let avatarFinal;
       const { title, author, isbn, notes, rating, lang, date_read,avatar } = req.body;
       if(avatar.trim()===''){
-        avatar = req.file ? `${process.env.DEFAULT_UPLOAD}${isbn}-${path.basename(req.file.path)}` : process.env.DEFAULT_COVER;
+        avatarFinal = req.file ? `${process.env.DEFAULT_UPLOAD}${isbn}-${path.basename(req.file.path)}` : process.env.DEFAULT_COVER;
       }
-      console.log(avatar);
+
       const coverUrl = req.body.imgUrl || avatar;
-      console.log(coverUrl);
       try {
             // The following lines determines the avatar (book cover image) for the book being added
           // They check three possible sources for the image in order of priority:
@@ -229,7 +231,7 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
               errorType: 500
             });
           }else{
-            avatar=finalPath;
+            avatarFinal=finalPath;
           }
         }else{
           if (avatar !== process.env.DEFAULT_COVER) {
@@ -244,16 +246,16 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
                   errorType: 500
                 });
               } else{
-                avatar=finalPath;
+                avatarFinal=finalPath;
               }
           }
         }
-
-        await addBook(title, author, isbn, notes, parseFloat(rating), coverUrl, lang, date_read, avatar);
+        // console.log(title, author, isbn, notes, parseFloat(rating), coverUrl, lang, date_read, avatarFinal, avatar);
+        await addBook(title, author, isbn, notes, parseFloat(rating), coverUrl, lang, date_read, avatarFinal);
 
         res.status(200).redirect("/");
       } catch (error) {
-        console.error('Error adding book:', error);
+        console.error('Post /add: Error adding book:', error);
         res.status(500).render('errorPage.ejs', { error:  errors.array().map(err => err.msg).join('\n'), errorType: 500 });
       }
     }
@@ -267,13 +269,16 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
   */
     try{
       let tempPath;
+      let returnPathRelative;
       //check if the file is a string or an object
       if (typeof file === 'string') {
         // If `file` is a string, use it directly as the path
-        tempPath = path.resolve(file);
+        tempPath = path.resolve(__dirname, 'public', process.env.DEFAULT_TEMP, path.basename(file));
+        returnPathRelative = file;
       } else if (file && file.path) {
-        // If `file` is an object (from upload), use its `path` property
-        tempPath = path.resolve(file.path);
+        // If `file` is an object (from upload), use its `path` property. This needs lots of testing
+        tempPath = path.resolve(__dirname, 'public', process.env.DEFAULT_TEMP, path.basename(file.path));
+        returnPathRelative = path.basename(file.path);
       } else {
         // If `file` is null or invalid, return false
         return false;
@@ -287,17 +292,23 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
         }
       }
         //save cover and return file name
-        const finalPath = path.resolve('public', process.env.DEFAULT_UPLOAD, `${newISBN}-${path.basename(tempPath)}`);
-
+        const finalPath = path.resolve(__dirname, 'public', process.env.DEFAULT_UPLOAD, `${newISBN}-${path.basename(tempPath)}`);
         await rename(tempPath, finalPath);
 
         // Optionally copy the renamed file back to temp folder for caching
-        const cachedFilePath = path.resolve('public', process.env.DEFAULT_TEMP, `${newISBN}-${path.basename(tempPath)}.jpg`);
+        const cachedFilePath = path.resolve(__dirname, 'public', process.env.DEFAULT_TEMP, `${newISBN}-${path.basename(tempPath)}.jpg`);
         await copyFile(finalPath, cachedFilePath);
-        return path.join('public', process.env.DEFAULT_UPLOAD, `${newISBN}-${path.basename(tempPath)}`);;
+        const returnPath = `/${process.env.DEFAULT_UPLOAD}${newISBN}-${path.basename(returnPathRelative)}`;
+        //this is the path that will be used to update the book record in the db. 
+        //This is the file name only i.e.relative path
+        //because image display reads relative paths and does not need the full path
+        //this is also war path---let see what happens. WE ARE AT WAR
+        return returnPath;
+        // return path.join('public', process.env.DEFAULT_UPLOAD, `${newISBN}-${path.basename(finalPath)}`);
 
     }catch{error}{
-      console.error('Error saving book cover:', error, errors.array().map(err => err.msg).join('\n'));
+      console.log(error)
+      // console.error('Error saving book cover:', error, errors.array().map(err => err.msg).join('\n'));
       return false;
     }
   }
@@ -308,8 +319,9 @@ import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js
       if (!fileName) {
         throw new Error('Invalid filename');
       }    
-    
-        const delFilePath = path.resolve(fileName);
+      //this might be problematic if it does not resolve to the correct path but the function checks if the file exists 
+      //and deletes it if it does so saving grace. TO DO: exhaustively test this
+        const delFilePath = path.resolve(__dirname, 'public', process.env.DEFAULT_UPLOAD, fileName);
 
 
         // Delete temp image

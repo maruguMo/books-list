@@ -341,15 +341,16 @@ function populateAddForm(book, addNewForm, isAddRemote=false){
         return true;
     }
     function showHideISBNButton(){
-        const isbnIput=document.getElementById('isbn');
-        const searchBtn=document.getElementById('search-online');
-        isbnIput.addEventListener('input',()=>{
-            if(isbnIput.value.trim()!==""){
-                searchBtn.style.display='block';
-            }else{
-                searchBtn.style.display='none';
-            }
-        });
+        //to implement later
+        // const isbnIput=document.getElementById('isbn');
+        // const searchBtn=document.getElementById('search-online');
+        // isbnIput.addEventListener('input',()=>{
+        //     if(isbnIput.value.trim()!==""){
+        //         searchBtn.style.display='block';
+        //     }else{
+        //         searchBtn.style.display='none';
+        //     }
+        // });
     }
     function initializeAvatar(){
         const imgFileInput=document.getElementById('coverImage');
