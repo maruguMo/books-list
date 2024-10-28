@@ -56,7 +56,7 @@ in vs code bash terminal run the following commands to install dependencies
       npm i
 
 ### 3. Set up pg database
-If not installed, download and installed PostgreSQL database including pgAdmin. Make sure you create a password that you can remember for the root postres user
+If not installed, download and install PostgreSQL database including pgAdmin. Make sure you create a password that you can remember for the root postres user
 Create a database called books [consult postgres documentation on how to do this](https://www.postgresql.org/docs/current/)
 With the created database open the query editor and run this command
 
