@@ -115,7 +115,19 @@ On vs code bash cli CD into the root directory of the solution and run the follo
 This will start the express server and run the app.js. On your browser navigate to
 
         http://localhost:3000
+## Look and Feel
+### Home page
+![Homepage books capstone](https://github.com/user-attachments/assets/c07ebc6f-9b6e-42aa-8367-eb1c9afdc377)
 
+### Adding a new book
+
+[add a new book capstone](https://github.com/user-attachments/assets/56a4380e-62f0-4122-99db-ac8162af6f37)
+
+### View Book notes
+![viewing book notes books capstone](https://github.com/user-attachments/assets/3f63c932-c5b4-4f88-bccd-0852157391e9)
+
+### Search for book/book cover on the open library
+![Search results books capstone](https://github.com/user-attachments/assets/94d56903-b864-4bbe-828b-24e08e6b157b)
 
 
 
