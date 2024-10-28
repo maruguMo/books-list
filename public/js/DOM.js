@@ -136,7 +136,7 @@ let addQuill;
                     const selectedText=item.textContent;
                     const searchBy=item.getAttribute('data-searchby');
 
-                    document.getElementById('searchByLabel').textContent=`${searchLbl}: ${selectedText}`;
+                    document.getElementById('searchByLabel').textContent=`${searchBy}: ${selectedText}`;
 
                     document.getElementById('searchByHidden').value=searchBy;
 
