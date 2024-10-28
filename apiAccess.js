@@ -4,35 +4,32 @@ import path from "path";
 
 
 export async function downloadImage(url, fileName) {
-    const imagePath = path.resolve('public','covers','temp', `${fileName}.jpg`);
-    const writer = fs.createWriteStream(imagePath);
-  
-    try {
-      const response = await axios({
-        url,
-        method: 'GET',
-        responseType: 'stream'
-      });
-  
-      response.data.pipe(writer);
-  
-      writer.on('finish', () => {
-        //console.log(`Saved: ${imagePath}`)
-        return true;
-      });
+  const imagePath = fileName;
+  const writer = fs.createWriteStream(imagePath);
+
+  try {
+    const response = await axios({
+      url,
+      method: 'GET',
+      responseType: 'stream'
+    });
+
+    response.data.pipe(writer);
+
+    // Wrap in a promise to handle asynchronous completion
+    return new Promise((resolve, reject) => {
+      writer.on('finish', () => resolve(true));
       writer.on('error', (err) => {
-        //console.error('Error writing image:', err);
-        return false;
+        console.error('Error writing image to file:', err);
+        reject(false);
       });
-    } catch (error) {
-      console.error('Error downloading image:', error.message);
-      return false;
-    }
+    });
+  } catch (error) {
+    console.error('Error downloading image:', error.message);
+    return false;
   }
+}
 
-  export async function saveBookAndCover(){
-
-  }
   // Function to get book details by title or ISBN
 export async function fetchBookRemote(searchParams,searchTerm) {
 

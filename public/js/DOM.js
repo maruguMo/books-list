@@ -159,7 +159,8 @@ let addQuill;
         //#endregion
     }
 //#endregion
-//#region populate add form
+
+//#region: Populate add form
 function populateAddForm(book, addNewForm, isAddRemote=false){
     addNewForm.title.value = book.title;
     addNewForm.author.value = book.author;
@@ -167,10 +168,7 @@ function populateAddForm(book, addNewForm, isAddRemote=false){
     addNewForm.lang.value = book.lang;
     addNewForm.imgUrl.value = book.cover_url;
     addNewForm.avatar.value = book.avatar;
-
-    console.log(book.avatar);
-    console.log(book.cover_url);
-
+    
     const bookAvatar=document.getElementById('book-cover-preview');
     bookAvatar.style.backgroundImage='none';
     bookAvatar.style.filter='none';
@@ -179,6 +177,8 @@ function populateAddForm(book, addNewForm, isAddRemote=false){
     addNewForm.method="POST";
 
     if(isAddRemote){
+        console.log('cover id', book.cover_id);
+        addNewForm.cover_id.value = book.cover_id ? book.cover_id:null;
         addNewForm.action="/add";
     }else{
         const ratingDiv=document.getElementById('rating-add');
@@ -196,14 +196,17 @@ function populateAddForm(book, addNewForm, isAddRemote=false){
     }
 }
 //#endregion
+
 //#region initialize remote books
     export function initializeRemoteBooks(remBooks){
         document.querySelectorAll('.add-button').forEach(btn =>{
             btn.addEventListener('click', async (e)=>{
                 e.preventDefault();
                 const id = btn.getAttribute('data-id');
+                //for remote books the id is the index of the element in the results returned as an array
+                //from the API. So the id starts from 0
                 const book = remBooks[id];
-                console.log(id);
+
                 if(book){
                     initializeAddNew(book);
                 }else{
@@ -214,6 +217,7 @@ function populateAddForm(book, addNewForm, isAddRemote=false){
         });
     }
 //#endregion
+
 //#region initialize edits
     export function initializeEdits(books){
         //initialize the book editing function regardless of the view

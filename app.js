@@ -13,7 +13,7 @@
 
     import { getList, shutdown, addBook, updateBook, fetchBookById, getISBN, fetchBookLocal, updateBookCover, updateNotes, deleteBook } from './database.js'
 
-    import { downloadImage, saveBookAndCover, fetchBookRemote } from "./apiAccess.js";
+    import { downloadImage, fetchBookRemote } from "./apiAccess.js";
     import clearTempFolder from './fileOp.js';
 //#endregion
 
@@ -264,26 +264,9 @@
         if (remBooks && remBooks.docs){
                 remRes = await Promise.all(
                 remBooks.docs.map(async doc => {
-                const coverId = doc.cover_i ? doc.cover_i : null;
-                let localCoverPath = process.env.DEFAULT_COVER; // Default cover if none
-                let imageUrl=null;
-                // Only download the cover if cover_id exists
-                if (coverId) {
-                  const coverFileName = `${coverId}`; // Use cover_id as the filename
-                  imageUrl = `${process.env.COVERS_BASE}${coverId}-M.jpg`;
-                  console.log(imageUrl);
 
-                  const tempCoverPath = path.resolve(process.env.DEFAULT_TEMP, `${coverFileName}.jpg`);
+                const imageUrl= doc.cover_i? `${process.env.COVERS_BASE}${doc.cover_i}-M.jpg`:null;
 
-                  // Check if the file already exists
-                  const exists = await fileExists(tempCoverPath); 
-                  //download only when the user selects add this book
-                  if (!exists){
-                    // await downloadImage(imageUrl, coverFileName);
-                  }          
-                  localCoverPath = `${process.env.DEFAULT_TEMP}${coverFileName}.jpg`;
-                }
-        
                 return {
                   author: doc.author_name ? doc.author_name.join(', ') : 'Unknown',
                   author_key: doc.author_key ? doc.author_key.join(', ') : 'Unknown',
@@ -292,7 +275,8 @@
                   lang: doc.language ? doc.language[0] : 'Unknown',
                   isbn13: doc.isbn && doc.isbn.length > 0 ? doc.isbn[0] : 'No ISBN',
                   publish:doc.publish_date ? doc.publish_date[0] : "Unknown",
-                  cover_url:imageUrl?imageUrl:null
+                  cover_url:imageUrl?imageUrl:null,
+                  cover_id: doc.cover_i ? doc.cover_i : null
                 };
               })
             );
@@ -330,68 +314,75 @@
             errorType: 400
           });
         }
-        let avatarFinal;
-        const { title, author, isbn, notes, rating, lang, date_read,avatar } = req.body;
+
+        
+        const { title, author, isbn, notes, rating, lang, date_read,avatar,cover_id} = req.body;
+
+        let finalAvatarPath = avatar ? avatar:null; //assign finalAvatarPath to avatar initially
+
+        let error = {
+          name: 'Internal server error',
+          message: 'File Operation error or other error: Saving cover failed',         
+          errorType: 500
+        }
+
+        console.log(cover_id);
+        //if we are uploading a file, then avatar will be empty therefore give it a file name i.e 'isbn-uploadfilename'
         if(avatar.trim()===''){
-          avatarFinal = req.file ? `${process.env.DEFAULT_UPLOAD}${isbn}-${path.basename(req.file.path)}` : process.env.DEFAULT_COVER;
+          finalAvatarPath = req.file ? `${process.env.DEFAULT_UPLOAD}${isbn}-${path.basename(req.file.path)}` : process.env.DEFAULT_COVER;
         }
 
         const coverUrl = req.body.imgUrl || avatar;
         try {
-          let finalPath;
-          let localCoverPath = process.env.DEFAULT_COVER;
+          
+          //check if avatar is a url and valid. If so download the image
           const isURL=isValidURL(avatar);
-          if (isURL){
-            const cover_Id=generateRandomFileName();
-            const coverFileName=`${cover_Id}`
-            const tempCoverPath = path.resolve(process.env.DEFAULT_TEMP, `${cover_Id}.jpg`);
-            const exists = await fileExists(tempCoverPath); 
-            //download only when the user selects add this book
-            if (!exists){
-              console.log("We are saving mamae")
-              await downloadImage(avatar, coverFileName);
-            }          
-            localCoverPath = `${process.env.DEFAULT_TEMP}${coverFileName}.jpg`;
-          }
           if (req.file) {
-            finalPath=await saveCover(req.file,isbn);
-            if (!finalPath){
-              console.log("error saving cover");
-              return res.status(500).render('errorPage.ejs', { 
-                error: {
-                  name: 'Internal server error',
-                  message: 'File Operation error or other error: Saving cover failed',
-                },
-                errorType: 500
-              });
-            }else{
-              avatarFinal=finalPath;
-            }
+              finalAvatarPath=await saveCover(req.file,isbn);
+              if (!finalAvatarPath){
+                  console.log("error saving cover");
+                  return res.status(500).render('errorPage.ejs', error, {errorType: 500});
+              }
+          }else if(isURL){
+              const randFileName = generateRandomFileName();
+              const coverId = cover_id? cover_id : randFileName;
+ 
+                /*
+                  Filename that the cover will be given when downloaded. 
+                  This is either the original cover_id or a random file number generated
+               */ 
+
+              const coverFilePath=path.resolve('public',process.env.DEFAULT_UPLOAD, `${isbn}-${coverId}.jpg`);
+              
+              //download only when the user selects add this book. download direct to uploads folder
+              // if the cover exists delete it first
+              const exists = await fileExists(coverFilePath); 
+              if (exists){
+                  await deleteCover(coverFilePath);  
+              }
+
+              const downloaded = await downloadImage(coverUrl, coverFilePath);
+              if (!downloaded){
+                error.message="Error downloading cover";
+                error.name="Internal server error: Download failed";
+                error.errorType="500";
+                return res.status(500).render('errorPage.ejs', error, {errorType: 500});
+              }
+              finalAvatarPath =`/${process.env.DEFAULT_UPLOAD}${path.basename(coverFilePath)}`;
           }else{
-              if (isURL && avatar !== process.env.DEFAULT_COVER) {
-                  console.log("here we are saving file as we go:", avatar);
-                  finalPath=await saveCover(avatar,isbn);
-                  if (!finalPath){
-                        console.log("error saving book cover");
-                        return res.status(500).render('errorPage.ejs', { 
-                          error: {
-                              name: 'Internal server error',
-                              message: 'File Operation error or other error: Saving cover failed',
-                          },
-                          errorType: 500
-                        });
-                    }else{
-                        avatarFinal=finalPath;
-                    }
-                }
+            error.message="Error adding book";
+            error.name="Internal server error: Unknown error";
+            error.errorType="500";
+            return res.status(500).render('errorPage.ejs', error, {errorType: 500});
           }
-          // console.log(title, author, isbn, notes, parseFloat(rating), coverUrl, lang, date_read, avatarFinal, avatar);
-          await addBook(title, author, isbn, notes, parseFloat(rating), coverUrl, lang, date_read, avatarFinal);
+          
+          //add book to database
+          await addBook(title, author, isbn, notes, parseFloat(rating), coverUrl, lang, date_read, finalAvatarPath);
 
           res.status(200).redirect("/");
         } catch (error) {
-          console.error('Post /add: Error adding book:', error);
-          res.status(500).render('errorPage.ejs', { error:  errors.array().map(err => err.msg).join('\n'), errorType: 500 });
+            console.error('Post /add: Error adding book:', error);
+            res.status(500).render('errorPage.ejs', { error:  errors.array().map(err => err.msg).join('\n'), errorType: 500 });
         }
       }
     );
