@@ -1,50 +1,45 @@
 <%- include("partials/header.ejs") %>
         <%if(book){%>
-            <div class="row d-flex">
-                <div class="col-lg-3 col-md-6 col-sm-6 col-12 text-center mb-2 mx-4">
-                    <img src="<%=book[0].avatar%>" alt="book avatar" class="book-img-l mt-2 rounded img-fluid">
-                </div>
-                <div class="col-9 col-md-6 col-sm-6 col-12 mx-4">
-                    <div class="book-info">
-                        <p class="fs-4 fs-lg-3"><%= book[0].title.toUpperCase() %>- BY <%= book[0].author.toUpperCase() %> </p>
-                        <p class="fs-4 fs-lg-3">ISBN: <%=book[0].isbn13%></p>
-                        <p class="fs-4 fs-lg-3">LANGUAGE: <%= book[0].lang.toUpperCase() %></p>
-                        <span class="fs-4 fs-lg-3">DATE READ: <%= formatDate(book[0].date_read) %></span>
-                        <hr>
-                        <div class="rating-container">
-                            <span class="star-rating arial-ital"  data-rating="<%=book[0].rating%>" 
-                                                                data-id= "<%=book[0].id%>">
-                                                                MY RATING: <%=book[0].rating%>/5
-                            </span>                        
-                            <div class="rating">
-                                <div class="stars-outer">
-                                <div class="stars-inner" id="book-<%=book[0].id%>"></div>
-                                </div>
-                            </div>
-                        </div>                    
+            <div class="container mt-3 rounded p-3">
+                      <!-- Title Section -->
+                <div class="row">
+                    <div class="col-12 text-center px-0">
+                    <h3 class="text-align-left"><strong>MY NOTES ABOUT: <%= book[0].title.toUpperCase() %>- BY <%= book[0].author.toUpperCase() %></strong></h3>
                     </div>
                 </div>
-                </div>
-            <hr>
-            <div class="row d-flex">
-                <div class="ModalTitleBar"><strong>MY NOTES ABOUT THE BOOK</strong></div>
-                <!-- <div class="justify-content-center">
-                    <button class="btn btn-primary mt-2 mb-2" id="edit-button">Edit</button>
-                </div> -->
-                <div class="notes-section ql-container ql-editor ql-snow" id="editor"> 
-                    <%- bookNotes %>
+                <hr>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <span class="float-start mb-3 mx-3 text-start">
+                            <img src="<%=book[0].avatar%>" alt="book avatar" class="book-img-l img-fluid rounded">
+                            <p>ISBN: <%=book[0].isbn13%></p>
+                            <p>LANGUAGE: <%= book[0].lang.toUpperCase() %></p>
+                            <p>DATE READ: <%= formatDate(book[0].date_read) %></p>
+                            <div class="rating-container">
+                                <span class="star-rating arial-ital"  data-rating="<%=book[0].rating%>" 
+                                                                    data-id= "<%=book[0].id%>">
+                                                                    MY RATING: <%=book[0].rating%>/5
+                                </span>                        
+                                <div class="rating">
+                                    <div class="stars-outer">
+                                    <div class="stars-inner" id="book-<%=book[0].id%>"></div>
+                                    </div>
+                                </div>
+                            </div>                             
+                        </span>
+                        <div>
+                            <!-- <p class="float-end rounded modal-title-normal mb-0 px-0"><strong>MY NOTES ABOUT THE BOOK</strong></p> -->
+                            <span class="py-2 float start notes-section ql-snow" id="editor"> 
+                                <%- bookNotes %>
+                            <span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex justify-content-end">
-                <form action="/edit-notes" method="post" id="change-notes" class="hide">
-                    <input type="hidden" name="notes" id="edit-notes">
-                    <input type="hidden" name="id" id="id">
-                    <button class="btn btn-primary">Submit</button>
-                </form>
-            </div>
-        <%}else{%>
-            <p class="instruct"> Oof! That didn't quite work. Please navigate to home and try again</p>
-        <%}%>
+            <%}else{%>
+                <p class="instruct"> Oof! That didn't quite work. Please navigate to home and try again</p>
+            <%}%>
+        </div>
     <script type="module">
         import {initializeRatingSystem, initializeCommonDOM } from '/js/DOM.js';
         import { createQuillEditor } from  '/js/quillSetUp.js';
@@ -56,33 +51,6 @@
             const qEditor=document.getElementById('editor');
             
             initializeRatingSystem();
-            // let quill;
-            // btnEdit.addEventListener('click', (e)=>{
-            //     if(btnEdit.innerText==='Edit'){
-            //         //show submit form
-            //         sendForm.style.display='block';
-            //         btnEdit.innerText='Cancel';
-            //         if(!quill){
-            //             quill=createQuillEditor(qEditor);                        
-            //         }
-            //         qEditor.setAttribute('contenteditable', 'true');
-            //     }else{
-            //         btnEdit.innerText='Edit';
-            //         sendForm.style.display='none';
-            //         quill.off('text-change'); 
-            //         if(quill){
-            //             quill=null;
-            //         }
-            //         qEditor.setAttribute('contenteditable', 'false');
-            //         // qlToolBar.style.display='none';
-            //     }
-            // });
-            // sendForm.onsubmit=(e)=>{
-            //     if(btnEdit.innerText==="Edit"){
-            //         e.preventDefault();
-            //        }
-            // }
-
         });
     </script>
 <%- include("partials/footer.ejs") %>

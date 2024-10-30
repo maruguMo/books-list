@@ -127,6 +127,7 @@ h1,h2,h3,h4,h5,h6{
   background-image: url('/assets/Designer.jpeg');
   background-repeat: no-repeat;
   background-size: cover;
+  box-shadow: 5px 5px 5px gray  ;
 }
 .book-img{
   width: 100%;
@@ -136,8 +137,9 @@ h1,h2,h3,h4,h5,h6{
 }
 .book-img-l{
   width: auto;
-  min-width: 20dvw;
+  min-width: auto;
   max-height: 35dvh;
+  image-rendering: optimizeQuality;
   object-fit: contain;
 }
 .book-dets {
@@ -359,7 +361,6 @@ p{
   padding-bottom: 0;
   overflow-y: auto;
   border-radius: 5px;
-  height: 65dvh;  
   border: none!important;
 }
 @media (max-width: 932px) {
