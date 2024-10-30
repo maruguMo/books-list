@@ -124,7 +124,7 @@ This will start the express server and run the app.js. On your browser navigate 
 [add a new book capstone](https://github.com/user-attachments/assets/56a4380e-62f0-4122-99db-ac8162af6f37)
 
 ### View Book notes
-![viewing book notes books capstone](https://github.com/user-attachments/assets/3f63c932-c5b4-4f88-bccd-0852157391e9)
+![viewing book notes books capstone]
 
 ### Search for book/book cover on the open library
 ![Search results books capstone](https://github.com/user-attachments/assets/94d56903-b864-4bbe-828b-24e08e6b157b)
