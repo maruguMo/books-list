@@ -10,7 +10,7 @@
         </div>
     </div>
     <!-- books read list -->
-    <div id="book-container" data-books='<%= JSON.stringify(books) %>'>
+    <div id="book-container"  data-books='<%= JSON.stringify(books) %>'>
         <%if(books && books.length >0) {%>
             <ul class="book-list px-0 py-0 rounded" id="book-list">
                 <!-- <% books.forEach(book=>{ %>
@@ -50,7 +50,7 @@
     </div>
 
     <div class="modal" id="add-newBk">
-        <div class="mymodal-content container container-lg container-md container-sm dark">
+        <div class="mymodal-content container container-lg container-md container-sm">
             <div class="ModalTitleBar"  id="add-new-title"> Add a new book <span class="close" id="closeAddModal">&times;</span></div>
             <form action="/add"  id="add-new" method="POST" enctype="multipart/form-data">
                 <div class="row">

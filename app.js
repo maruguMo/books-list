@@ -9,9 +9,8 @@
     import { access } from 'fs/promises';
     import { constants } from 'fs';
     import multer from 'multer'
-    import { body, validationResult } from 'express-validator';
 
-    import { getList, shutdown, addBook, updateBook, fetchBookById, getISBN, fetchBookLocal, updateBookCover, updateNotes, deleteBook } from './database.js'
+    import { getList, shutdown, addBook, updateBook, fetchBookById, getISBN, fetchBookLocal, updateNotes, deleteBook } from './database.js'
 
     import { downloadImage, fetchBookRemote } from "./apiAccess.js";
     import clearTempFolder from './fileOp.js';
@@ -242,79 +241,78 @@
       }
     });
 
-    app.get('/search',async(req,res)=>{
-      
+    // Global variables to store the last search parameters and results
+    let searchParamsGlobal = '';
+    let searchByGlobal = '';
+    let remResGlobal = [];
+    let locRes=[];
+
+    app.get('/search', async (req, res) => {
       // search locally i.e. search for title/author/ISBN
-      // then search on open library.....
+      // then search on open library.....      
+      const searchParams = req.query.search;
+      const searchBy = req.query.searchBy;
 
-      const searchParams=req.query.search;
-      const searchBy=req.query.searchBy;
+      const isISBN = searchBy === 'ISBN';
 
-      const isISBN=searchBy==='ISBN';
-      const dbSearchParams=`%${req.query.search}%`;
+      const isNewSearch = searchParams !== searchParamsGlobal || searchBy !== searchByGlobal;
 
-      try{
-        //clear the temp folder before each search
-        await clearTempFolder();
-        const locRes= await fetchBookLocal(dbSearchParams, isISBN);
-        const remBooks= await fetchBookRemote(searchParams,searchBy); //initial object to contain results from the API call
-        // console.log(remBooks);
-        let remRes=null; //object to hold mapped results -(via the mpa function) - that will contain application specific field names
-        // console.log(localBooks);
-        if (remBooks && remBooks.docs){
-                remRes = await Promise.all(
-                remBooks.docs.map(async doc => {
+      try {
 
-                const imageUrl= doc.cover_i? `${process.env.COVERS_BASE}${doc.cover_i}-M.jpg`:null;
+        if (isNewSearch){
+            //reset thhe global parameters
+            searchParamsGlobal = searchParams;
+            searchByGlobal = searchBy;
 
-                return {
-                  author: doc.author_name ? doc.author_name.join(', ') : 'Unknown',
-                  author_key: doc.author_key ? doc.author_key.join(', ') : 'Unknown',
-                  avatar: imageUrl || null, 
-                  title: doc.title || 'untitled',
-                  lang: doc.language ? doc.language[0] : 'Unknown',
-                  isbn13: doc.isbn && doc.isbn.length > 0 ? doc.isbn[0] : 'No ISBN',
-                  publish:doc.publish_date ? doc.publish_date[0] : "Unknown",
-                  cover_url:imageUrl?imageUrl:null,
-                  cover_id: doc.cover_i ? doc.cover_i : null
-                };
-              })
-            );
+            locRes = await fetchBookLocal(searchParams, isISBN);
+
+            const remBooks = await fetchBookRemote(searchParams, searchBy); //initial object to contain results from the API call
+
+            remResGlobal=[];
+
+            if (remBooks && remBooks.docs) {
+
+                  remResGlobal = await Promise.all(
+
+                    remBooks.docs.map(async doc => {
+
+                      const imageUrl = doc.cover_i ? `${process.env.COVERS_BASE}${doc.cover_i}-M.jpg` : null;
+
+                      return {
+                        author: doc.author_name ? doc.author_name.join(', ') : 'Unknown',
+                        author_key: doc.author_key ? doc.author_key.join(', ') : 'Unknown',
+                        avatar: imageUrl || null,
+                        title: doc.title || 'untitled',
+                        lang: doc.language ? doc.language[0] : 'Unknown',
+                        isbn13: doc.isbn && doc.isbn.length > 0 ? doc.isbn[0] : 'No ISBN',
+                        publish: doc.publish_date ? doc.publish_date[0] : 'Unknown',
+                        cover_url: imageUrl,
+                        cover_id: doc.cover_i
+                      };
+                    })
+                );
+            }
         }
-        // console.log(`we are here ${remRes}`)
-        res.render('search.ejs',{locRes, remRes, SearchTerm: searchParams});
-      }catch(error){
-        console.log(error.stack);
-        res.status(500).render('errorPage.ejs', {error, errorType:500});
+        // Calculate total pages and slice results for current page
+        // Pagination variables/// query current page
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = 10;
+        const totalPages = Math.ceil(remResGlobal.length / pageSize);
+
+
+        // Paginate the cached results : object to hold mapped results -(via the mpa function) - that will contain application specific field names
+        const remRes = remResGlobal.slice((page - 1) * pageSize, page * pageSize);    
+        // Render search results with pagination data
+        res.render('search.ejs', {locRes, remRes, coversbase: process.env.COVERS_BASE ,search: searchParams,searchBy, page, totalPages});
+      }catch (error) {
+          console.log(error.stack);
+          res.status(500).render('errorPage.ejs', { error, errorType: 500 });
       }
     });
-//#endregion
+    //#endregion
 
  //#region post routes /add, /edit/:id, /delete/:id, /edit-notes
-    app.post("/add", 
-      upload.single('coverImage'),
-      [
-        body('title').trim().notEmpty().withMessage('Title is required'),
-        body('author').trim().notEmpty().withMessage('Author is required'),
-        body('isbn').trim().isISBN().withMessage('Invalid ISBN'),
-        body('rating').isFloat({ min: 0, max: 5 }).withMessage('Rating must be between 0 and 5'),
-        body('lang').trim().notEmpty().withMessage('Language is required'),
-        body('date_read').isDate().withMessage('Invalid date format')
-      ],
-      async (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-          // Render errorPage.ejs with validation errors
-          return res.status(400).render('errorPage.ejs', { 
-            error: {
-              name: 'ValidationError',
-              message: 'Validation failed',
-              stack: errors.array().map(err => err.msg).join('\n')
-            },
-            errorType: 400
-          });
-        }
-
+    app.post("/add",  upload.single('coverImage'),    async (req, res) => {
         
         const { title, author, isbn, notes, rating, lang, date_read,avatar,cover_id} = req.body;
 
@@ -387,28 +385,9 @@
       }
     );
 
-    app.post("/edit/:id", upload.single('coverImage'),  
-    [
-      body('title').trim().notEmpty().withMessage('Title is required'),
-      body('author').trim().notEmpty().withMessage('Author is required'),
-      body('isbn').trim().isISBN().withMessage('Invalid ISBN'),
-      body('rating').isFloat({ min: 0, max: 5 }).withMessage('Rating must be between 0 and 5'),
-      body('lang').trim().notEmpty().withMessage('Language is required'),
-      body('date_read').isDate().withMessage('Invalid date format'),
-    ],async(req, res)=>{
+    app.post("/edit/:id", upload.single('coverImage'), async(req, res)=>{
       //check if the user has uploaded a new book cover, if so delete the old one by retrieving the stored ISBN(Not changed)
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        // Render errorPage.ejs with validation errors
-        return res.status(400).render('errorPage.ejs', { 
-          error: {
-            name: 'ValidationError',
-            message: 'Validation failed',
-            stack: errors.array().map(err => err.msg).join('\n')
-          },
-          errorType: 400
-        });
-      }
+
       const { title, author, isbn, notes, rating, lang, date_read, avatar } = req.body;
       // This line determines the avatar (book cover image) for the book being edited
       // It checks three possible sources for the image in order of priority:

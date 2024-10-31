@@ -1,6 +1,5 @@
 import axios from "axios";
 import fs from 'fs';
-import path from "path";
 
 
 export async function downloadImage(url, fileName) {
@@ -48,7 +47,7 @@ export async function fetchBookRemote(searchParams,searchTerm) {
       remURL +=`?q=${searchParams}&page=1,sort=new`;
       break;
   }
-  console.log(remURL);
+  // console.log(remURL);
   try{
     const res=await axios.get(remURL);
     // console.log('data:', res.data);

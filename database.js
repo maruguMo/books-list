@@ -62,12 +62,15 @@ export async function updateBook(title,author, isbn, notes, rating, coverUrl, la
 export async function fetchBookLocal(searchParams, isISBN=false) {
     //check author or title or ISBN
     let query;
-    const values=[searchParams];
+    const values=[`%${searchParams}%`];
     if (isISBN){
+
         query=`SELECT * 
                FROM booklist 
                WHERE isbn13 ILIKE $1`;
+
     }else{
+
       query= `SELECT * 
               FROM booklist
               WHERE author ILIKE $1

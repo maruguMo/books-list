@@ -1,75 +1,118 @@
 <%- include("partials/header.ejs") %>
-    <div class="container modal-title-normal rounded">
-        <span style="text-align: center;" class="text-light mt-2 fw-medium fs-6">Search results for:&nbsp;</span><span class="fw-normal text-light fs-6">"<%= SearchTerm%>"</span>
+    <div class="container modal-title-normal rounded text-center text-break">
+            <span class="text-light mt-2 fw-medium fs-6 text-break">Search results for:&nbsp;</span>
+            <span class="fw-normal text-light fs-6 text-break fst-italic">"<%= search %>", </span>
+            <span class="text-light mt-2 fw-medium fs-6 text-break">Search criteria:&nbsp;</span> 
+            <span class="fw-normal text-light fs-6 text-break fst-italic">"<%= searchBy %>"</span>
     </div>
     <hr>
-    <h5>Search results from the open library</h5>
-    <div id="openLibResults px-0 py-0">
-        <%if(remRes && remRes.length >0){%>
-            <div class ="book-cont-rem" id="book-cont-rem" data-rembooks='<%=JSON.stringify(remRes) %>'>
-                <ul class="book-list">
-                    <%remRes.forEach((book, idx)=>{%>
-                        <% if(book.avatar){ %>
-                            <li>
-                                <div class="book-card">
-                                    <img class="mb-1 book-img rounded" src="<%=book.avatar%>" alt="<%=book.Title%>">
-                                    <div class="book-dets">
-                                        <p data-title="<%=book.title%>"><strong>Title: </strong><%=book.title%></p>
-                                        <p data-author="<%=book.author%>"><strong>Author: </strong><%=book.author%></p>
-                                        <p data-isbn="<%=book.isbn13%>"><strong>ISBN: </strong><%=book.isbn13%></p>
-                                        <p data-lang="<%=book.lang%>"><strong>Language: </strong><%=book.lang%></p>
-                                        <p data-publish="<%=book.publish%>"><strong>Published: </strong><%=book.publish%></p>
-                                    </div>
-                                    <div class="add-item">
-                                        <button class="ctrls btn btn-dark btn-sm add-button" id="add-button-<%=idx%>" data-id="<%=idx%>">Add this book!</button>
-                                    </div>
+<!-- Tab Headers -->
+<ul class="nav nav-tabs mb-3" id="bookTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active btn" id="openLib-tab" data-bs-toggle="tab" data-bs-target="#openLib" type="button" role="tab" aria-controls="openLib" aria-selected="true">
+        Search results from open library
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link btn" id="localRepo-tab" data-bs-toggle="tab" data-bs-target="#localRepo" type="button" role="tab" aria-controls="localRepo" aria-selected="false">
+        Similar books already added
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content px-0 rounded" id="bookTabsContent">
+        <!-- Open Library Results Tab -->
+        <div class="tab-pane fade show active" id="openLib" role="tabpanel" aria-labelledby="openLib-tab">
+            <div id="openLibResults px-0 py-0">
+                <% if (remRes && remRes.length > 0) { %>
+                <div class="book-cont-rem" id="book-cont-rem" data-rembooks='<%= JSON.stringify(remRes) %>'>
+                    <ul class="book-list">
+                    <% remRes.forEach((book, idx) => { %>
+                        <li>
+                            <div class="book-card">
+                                <img class="mb-1 book-img book-img-rem rounded" 
+                                        src="<%= book.avatar || '/covers/DefaultCover-color.png' %>" alt="<%= book.title %>"
+                                        data-largeImg="<%= book.avatar ? `${coversbase}${book.cover_id}-L.jpg` : '/covers/DefaultCover-color.png' %>"
+                                >
+                                <div class="book-dets">
+                                <p data-title="<%= book.title %>"><strong>Title: </strong><%= book.title %></p>
+                                <p data-author="<%= book.author %>"><strong>Author: </strong><%= book.author %></p>
+                                <p data-isbn="<%= book.isbn13 %>"><strong>ISBN: </strong><%= book.isbn13 %></p>
+                                <p data-lang="<%= book.lang %>"><strong>Language: </strong><%= book.lang %></p>
+                                <p data-publish="<%= book.publish %>"><strong>Published: </strong><%= book.publish %></p>
                                 </div>
-                            </li>
-                        <% } %>
-                    <%});%>
-                </ul>
-            </div>
-        <%}else{ %>
-            <p class="px-2 py-0"><i>No results available from the open library</i></p>
-        <%}%>
-    </div>
-    <hr>
-    <h5>Similar books already added</h5>
-    <%if(locRes && locRes.length > 0){%>
-        <div id="book-container" data-books='<%= JSON.stringify(locRes) %>'>            
-            <ul class="book-list">
-                <%locRes.forEach((book)=>{%>
-                <li>
-                    <div class="book-card">
-                        <img class="mb-1 book-img rounded book-image" src="<%=book.avatar%>" 
-                            alt="<%=book.title%>" data-id="<%=book.id%>" id="book-image-<%=book.id%>">
-                        <span class="arial-ital"><strong>Title: </strong> <%= book.title%></span>
-                        <span class="arial-ital"><strong>Author: </strong> <%=book.author%></span>
-                        <span class="arial-ital"><strong>Language: </strong><i><%=book.lang%></i></span>
-                        <hr style="margin:0;padding:0;">                    
-                        <div class="rating-container">
-                            <div class="rating">
-                                <div class="stars-outer">
-                                <div class="stars-inner" id="book-<%=book.id%>"></div>
+                                <div class="add-item">
+                                <button class="ctrls btn btn-dark btn-sm add-button" id="add-button-<%= idx %>" data-id="<%= idx %>">Add this book!</button>
                                 </div>
                             </div>
-                            <span class="star-rating arial-ital"  data-rating="<%=book.rating%>" data-id="<%=book.id%>" > <%=book.rating%>/5</span>
+                        </li>
+                    <% }); %>
+                    </ul>
+                </div>
+                <% } else { %>
+                <p class="px-2 py-0"><strong><i>No results available from the open library</i></strong></p>
+                <% } %>
+            </div>
+            <!-- Pagination Controls -->
+            <div class="pagination-controls d-flex justify-content-end ">
+                <% if (page > 1) { %>
+                <a href="/search?search=<%= search %>&searchBy=<%= searchBy %>&page=<%= page - 1 %>" class="btn btn-outline-success btn-sm">Prev</a>&nbsp;
+                <% } %>
+
+                <span> page <%= page %> of <%= totalPages %> </span>
+
+                <% if (page < totalPages) { %>
+                &nbsp;<a href="/search?search=<%= search %>&searchBy=<%= searchBy %>&page=<%= page + 1 %>" class="btn btn-outline-success btn-sm">Next</a>
+                <% } %>
+            </div>                
+        </div>
+        <!-- Local Repository Results Tab -->
+        <div class="tab-pane fade" id="localRepo" role="tabpanel" aria-labelledby="localRepo-tab">
+        <% if (locRes && locRes.length > 0) { %>
+            <div id="book-container" data-books='<%= JSON.stringify(locRes) %>'>
+            <ul class="book-list">
+                <% locRes.forEach((book) => { %>
+                <li>
+                    <div class="book-card">
+                    <img class="mb-1 book-img rounded book-image" src="<%= book.avatar %>" alt="<%= book.title %>" data-id="<%= book.id %>" id="book-image-<%= book.id %>">
+                    <span class="arial-ital"><strong>Title: </strong><%= book.title %></span>
+                    <span class="arial-ital"><strong>Author: </strong><%= book.author %></span>
+                    <span class="arial-ital"><strong>Language: </strong><i><%= book.lang %></i></span>
+                    <hr style="margin:0;padding:0;">
+                    <div class="rating-container">
+                        <div class="rating">
+                        <div class="stars-outer">
+                            <div class="stars-inner" id="book-<%= book.id %>"></div>
                         </div>
-                        <div class="ctrls-container gap-1">
-                            <button class="ctrls btn btn-dark btn-sm view-button" id="view-button-<%=book.id%>" data-id="<%=book.id%>">More...</button>
-                            <button class="ctrls btn btn-dark btn-sm edit-button" id="edit-button-<%=book.id%>" data-id="<%=book.id%>">Edit</button>
-                            <button class="ctrls  btn btn-dark btn-sm del-button" id="del-button-<%=book.id%>" data-id="<%=book.id%>">Delete</button>
                         </div>
+                        <span class="star-rating arial-ital" data-rating="<%= book.rating %>" data-id="<%= book.id %>"> <%= book.rating %>/5</span>
+                    </div>
+                    <div class="ctrls-container gap-1">
+                        <button class="ctrls btn btn-dark btn-sm view-button" id="view-button-<%= book.id %>" data-id="<%= book.id %>">More...</button>
+                        <button class="ctrls btn btn-dark btn-sm edit-button" id="edit-button-<%= book.id %>" data-id="<%= book.id %>">Edit</button>
+                        <button class="ctrls btn btn-dark btn-sm del-button" id="del-button-<%= book.id %>">Delete</button>
+                    </div>
                     </div>
                 </li>
-                <%});%>
+                <% }); %>
             </ul>
+            </div>
+        <% } else { %>
+            <p class="px-2 py-0"><strong><i>No similar books added</i></strong></p>
+        <% } %>
         </div>
-    <%}else{%>
-        <p class="px-2 py-0"><i>No results from local repository</i></p>
-    <%}%> 
+  </div>
+  
+  <!-- Modal for image preview -->
+  <div id="imagePreviewModal" class="previewmodal">
+    <span class="close-preview" id="close-preview">&times;</span>
+    <div id="caption" class="mb-3"></div>
+    <hr>
+    <img class="preview-modal-content" id="previewImage">
+  </div>  
 
-    <div class="modal" id="add-newBk">
+  <div class="modal" id="add-newBk">
         <div class="mymodal-content container container-lg container-md container-sm dark">
             <div class="ModalTitleBar" id="add-new-title">Add a new book <span class="close" id="closeAddModal">&times;</span></div>
             <form action="/add"  id="add-new" method="POST" enctype="multipart/form-data">
@@ -121,10 +164,10 @@
                                 <input type="hidden" name="rating" id="rating" class="form-control" required placeholder="Rating">
                                 <div class="rating" data-rating="0" id="rating-add">
                                     <div class="stars-outer" id="rating-add-outer">
-                                      <div class="stars-inner" id="rating-add-inner"></div>
+                                        <div class="stars-inner" id="rating-add-inner"></div>
                                     </div>
-                                  </div>
-                                  <span  class="rating-show rating-label" id="rating-disp"></span>
+                                    </div>
+                                    <span  class="rating-show rating-label" id="rating-disp"></span>
                             </div>
                         </div>                                     
                     </div>
@@ -146,20 +189,57 @@
                 </div>
             </form>
         </div>
-    </div>
+  </div>
 
     <script type="module">
-        import { createQuillEditor } from  '/js/quillSetUp.js';
-        import { showDynamicAlert, showModal, closeModal, 
-                getQlContent} from '/js/Util.js';
-        import {initializeRatingSystem, initializeCommonDOM, initializeRemoteBooks } from '/js/DOM.js';
-
+        //#region imports
+            import { createQuillEditor } from  '/js/quillSetUp.js';
+            import { showDynamicAlert, showModal, closeModal, 
+                    getQlContent} from '/js/Util.js';
+            import {initializeRatingSystem, initializeCommonDOM, initializeRemoteBooks } from '/js/DOM.js';
+        //#endregion
         document.addEventListener('DOMContentLoaded', async ()=>{
             const remContainer=document.getElementById('book-cont-rem');
             const remoteBooks= JSON.parse(remContainer.dataset.rembooks);
             initializeRatingSystem();
             initializeCommonDOM();
             initializeRemoteBooks(remoteBooks);
+
+            document.querySelectorAll(".book-img-rem").forEach(img =>{
+                img.addEventListener('click', ()=>{
+                    const imgL=img.getAttribute('data-largeImg')
+                    showImagePreview(imgL, img.alt);
+                });
+            });
+            const closePrevButton=document.getElementById("close-preview");
+            const prevModal=document.getElementById('imagePreviewModal');
+
+            closePrevButton.addEventListener('click', ()=>{
+                closeModal(prevModal);
+            });
+
+            // Close the modal when clicking outside of the image
+            window.onclick = function(event) {
+                var modal = document.getElementById("imagePreviewModal");
+                if (event.target === modal) {
+                    closeModal(modal)
+                }
+            }
+
         });
+        // Show image preview in a modal
+        function showImagePreview(imageSrc, title) {
+            var modal = document.getElementById("imagePreviewModal");
+            var previewImage = document.getElementById("previewImage");
+            var caption = document.getElementById("caption");
+
+            previewImage.src = imageSrc;
+            previewImage.style.objectFit="contain";
+            previewImage.style.imageRendering="optimizeQuality";
+
+            caption.innerText = title.toUpperCase();
+            showModal(modal)
+        }
+       
     </script>
 <%- include("partials/footer.ejs") %>
