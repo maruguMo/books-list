@@ -10,7 +10,7 @@
         </div>
     </div>
     <!-- books read list -->
-    <div id="book-container"  data-books='<%= JSON.stringify(books) %>'>
+    <div id="book-container" class="container-fluid"  data-books='<%= JSON.stringify(books) %>'>
         <%if(books && books.length >0) {%>
             <ul class="book-list px-0 py-0 rounded" id="book-list">
                 <!-- <% books.forEach(book=>{ %>
@@ -43,12 +43,11 @@
                 <button id="prev-page" class="btn btn-sm btn-outline-success"><i class="fa-regular fa-square-caret-left"></i></button>
                 <span id="current-page" class="mx-2 btn-sm">page 1</span>
                 <button id="next-page" class="btn btn-sm btn-outline-success"><i class="fa-regular fa-square-caret-right"></i></button>
-            </div>            
+            </div>           
         <%}else{%>
                 <h5 class="flex-cont">You havent added any books to your list yet</h5>    
         <%}%>
     </div>
-
     <div class="modal" id="add-newBk">
         <div class="mymodal-content container container-lg container-md container-sm">
             <div class="ModalTitleBar"  id="add-new-title"> Add a new book <span class="close" id="closeAddModal">&times;</span></div>

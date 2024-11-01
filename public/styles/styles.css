@@ -453,7 +453,7 @@ p{
 .preview-modal-content {
     margin: auto;
     display: block;
-    width: 80%;
+    width: 60%;
     height: 80%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: add some shadow for better visual */
     border-radius: 10px; /* Optional: add border radius */

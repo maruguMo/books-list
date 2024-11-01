@@ -271,7 +271,7 @@
             remResGlobal=[];
 
             if (remBooks && remBooks.docs) {
-
+                // console.log(remBooks);
                   remResGlobal = await Promise.all(
 
                     remBooks.docs.map(async doc => {
