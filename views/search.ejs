@@ -59,13 +59,13 @@
                 <!-- Pagination Controls -->
                 <div class="pagination-controls d-flex justify-content-end ">
                     <% if (page > 1) { %>
-                    <a href="/search?search=<%= search %>&searchBy=<%= searchBy %>&page=<%= page - 1 %>" class="btn btn-outline-success btn-sm">Prev</a>&nbsp;
+                        <a href="/search?search=<%= search %>&searchBy=<%= searchBy %>&page=<%= page - 1 %>" class="btn btn-outline-success btn-sm">Prev</a>&nbsp;
                     <% } %>
 
-                    <span> page <%= page %> of <%= totalPages %> </span>
+                        <span class="arial-ital d-flex justify-content-center align-items-center btn-sm"> Page <%= page %> of <%= totalPages %> </span>
 
                     <% if (page < totalPages) { %>
-                    &nbsp;<a href="/search?search=<%= search %>&searchBy=<%= searchBy %>&page=<%= page + 1 %>" class="btn btn-outline-success btn-sm">Next</a>
+                        &nbsp;<a href="/search?search=<%= search %>&searchBy=<%= searchBy %>&page=<%= page + 1 %>" class="btn btn-outline-success btn-sm">Next</a>
                     <% } %>
                 </div>                
             </div>
@@ -92,7 +92,7 @@
                                             <span class="star-rating arial-ital" data-rating="<%= book.rating %>" data-id="<%= book.id %>"> <%= book.rating %>/5</span>
                                         </div>
                                         <div class="ctrls-container gap-1">
-                                            <button class="ctrls btn btn-dark btn-sm view-button" id="view-button-<%= book.id %>" data-id="<%= book.id %>">More...</button>
+                                            <button class="ctrls btn btn-dark btn-sm view-button" id="view-button-<%= book.id %>" data-id="<%= book.id %>">Notes...</button>
                                             <button class="ctrls btn btn-dark btn-sm edit-button" id="edit-button-<%= book.id %>" data-id="<%= book.id %>">Edit</button>
                                             <button class="ctrls btn btn-dark btn-sm del-button" id="del-button-<%= book.id %>">Delete</button>
                                         </div>
@@ -242,7 +242,7 @@
 
             previewImage.src = imageSrc;
             previewImage.style.objectFit="contain";
-            previewImage.style.imageRendering="optimizeQuality";
+            previewImage.style.imageRendering="smooth";
 
             caption.innerText = title.toUpperCase();
             showModal(modal)

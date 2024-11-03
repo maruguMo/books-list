@@ -1,6 +1,6 @@
 <%- include("partials/header.ejs") %>
-    <div class="menu-bar">
-        <button class="btn btn-outline-primary btn-sm" id="add-book">Add a book!</button>
+    <div class="menu-bar px-3">
+        <button class="btn btn-outline-primary btn-sm rounded" id="add-book">Add a book!</button>
         <div class="sort-items d-flex px-2">
             <span class="btn-sm">Sort By: </span>
             <button class="sort-btn mx-2 btn btn-sm" data-sortcat="title">Title <i class="fa-solid fa-arrow-up-wide-short" id="title-ico"></i></button>
@@ -208,7 +208,7 @@
                         </div>
                         <p><small><strong>Read Date: </strong> ${formatDate(book.date_read)}</small></p>
                         <div class="ctrls-container gap-1">
-                            <button class="ctrls btn btn-dark btn-sm view-button" id="view-button-${book.id}" data-id="${book.id}">More...</button>
+                            <button class="ctrls btn btn-dark btn-sm view-button" id="view-button-${book.id}" data-id="${book.id}">Notes...</button>
                             <button class="ctrls btn btn-dark btn-sm edit-button" id="edit-button-${book.id}" data-id="${book.id}">Edit</button>
                             <button class="ctrls btn btn-dark btn-sm del-button" id="del-button-${book.id}" data-id="${book.id}">Delete</button>
                         </div>

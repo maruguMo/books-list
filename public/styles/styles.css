@@ -352,6 +352,7 @@ p{
 .arial-ital{
     font-family: 'Open Sans', arial, sans-serif;
     font-size:small;
+    /* font-style: italic; */
     margin:0;
     padding: 0;
 }
@@ -455,7 +456,7 @@ p{
     display: block;
     width: 60%;
     height: 80%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: add some shadow for better visual */
+    box-shadow: 0 4px 8px rgba(112, 190, 167, 0.4); /* Optional: add some shadow for better visual */
     border-radius: 10px; /* Optional: add border radius */
     position: absolute;
     top: 50%;

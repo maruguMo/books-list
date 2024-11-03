@@ -9,6 +9,7 @@
     import { access } from 'fs/promises';
     import { constants } from 'fs';
     import multer from 'multer'
+    import morgan from 'morgan';
 
     import { getList, shutdown, addBook, updateBook, fetchBookById, getISBN, fetchBookLocal, updateNotes, deleteBook } from './database.js'
 
@@ -31,6 +32,7 @@
     app.use(express.static('public'));
     app.use(express.static('js'));
     app.use(express.json());
+    app.use(morgan('combined'));
 
     app.set('view engine', 'ejs');
     app.set('views', './views');
@@ -275,11 +277,22 @@
                   remResGlobal = await Promise.all(
 
                     remBooks.docs.map(async doc => {
+                      let authorsDisplay;
+                      const maxAuthorsDisplayed=2;
 
                       const imageUrl = doc.cover_i ? `${process.env.COVERS_BASE}${doc.cover_i}-M.jpg` : null;
+                      if (doc.author_name && doc.author_name.length>0){
+                          authorsDisplay = doc.author_name.slice(0, maxAuthorsDisplayed).join(', ');
+                          if (doc.author_name.length > maxAuthorsDisplayed) {
+                            const othersCount=doc.author_name.length-maxAuthorsDisplayed;
+                            authorsDisplay += ` and ${othersCount} more author(s)`; 
+                        }
+                      }else{
+                          authorsDisplay='Unknown';
+                      }
 
                       return {
-                        author: doc.author_name ? doc.author_name.join(', ') : 'Unknown',
+                        author: authorsDisplay,
                         author_key: doc.author_key ? doc.author_key.join(', ') : 'Unknown',
                         avatar: imageUrl || null,
                         title: doc.title || 'untitled',
