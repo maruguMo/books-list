@@ -54,6 +54,17 @@ let addQuill;
         const qlContainer=document.getElementById('editor');
         if(!addQuill){addQuill = createQuillEditor(qlContainer);}
         
+            document.querySelectorAll(".btn-dark").forEach(btn => {
+                btn.addEventListener('mouseover', ()=>{
+                    btn.classList.remove('btn-dark');
+                    btn.classList.add('btn-success');
+                });
+
+                btn.addEventListener('mouseout', ()=>{
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-dark');
+                })
+            });
         //#region View notes functionality
             document.querySelectorAll(".view-button").forEach(btn =>{
                 btn.addEventListener('click', async ()=>{

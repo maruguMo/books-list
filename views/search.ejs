@@ -118,7 +118,7 @@
     </div>  
 
     <div class="modal" id="add-newBk">
-            <div class="mymodal-content container container-lg container-md container-sm dark">
+            <div class="mymodal-content container container-lg container-md container-sm">
                 <div class="ModalTitleBar" id="add-new-title">Add a new book <span class="close" id="closeAddModal">&times;</span></div>
                 <form action="/add"  id="add-new" method="POST" enctype="multipart/form-data">
                     <div class="row">
@@ -206,7 +206,10 @@
         document.addEventListener('DOMContentLoaded', async ()=>{
             const remContainer=document.getElementById('book-cont-rem');
             const localBooksContainer=document.getElementById('book-container');
-            const remoteBooks= JSON.parse(remContainer.dataset.rembooks);
+            let remoteBooks=null;
+            if (JSON.parse(remContainer.dataset.rembooks)){
+                remoteBooks= JSON.parse(remContainer.dataset.rembooks);
+            }
             const localBooks=JSON.parse(localBooksContainer.dataset.books);
             initializeRatingSystem();
             initializeCommonDOM();
